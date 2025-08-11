@@ -1,0 +1,101 @@
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Symfony\Component\HttpFoundation\StreamedResponse;
+
+public function streamPdf(Request $request, $index)
+{
+    $dataSession = session('skripsi_results') ?? [];
+    [$detail, $fileInfo] = $this->skripsiService->getDocumentFromSession($index, $dataSession);
+
+    if (!$fileInfo || empty($fileInfo['url_file'])) {
+        return response('File PDF tidak tersedia.', 404);
+    }
+
+    $url = $fileInfo['url_file'];
+    $rangeHeader = $request->header('Range');
+
+    $options = [
+        'headers' => [
+            'User-Agent' => $request->header('User-Agent') ?? 'Laravel-Proxy/1.0',
+        ],
+        'stream' => true,
+        'http_errors' => false,
+        'allow_redirects' => true,
+    ];
+
+    if ($rangeHeader) {
+        $options['headers']['Range'] = $rangeHeader;
+    }
+
+    try {
+        $resp = $this->httpClient->request('GET', $url, $options);
+    } catch (\Throwable $e) {
+        Log::error('Guzzle error fetching PDF', [
+            'url' => $url,
+            'index' => $index,
+            'exception' => $e->getMessage(),
+        ]);
+        return response('Gagal menghubungi sumber file (gateway error).', 502);
+    }
+
+    $status = $resp->getStatusCode();
+    $contentType = $resp->getHeaderLine('Content-Type') ?: 'application/pdf';
+    $filename = basename(parse_url($url, PHP_URL_PATH) ?: 'file.pdf');
+
+    // Jika server sumber support Range (status 206 atau ada Accept-Ranges: bytes)
+    $acceptRanges = strtolower($resp->getHeaderLine('Accept-Ranges')) === 'bytes';
+
+    if ($acceptRanges || $status === 206) {
+        $outHeaders = [
+            'Content-Type' => $contentType,
+            'Content-Disposition' => "inline; filename=\"{$filename}\"",
+            'X-Content-Type-Options' => 'nosniff',
+        ];
+
+        foreach (['Content-Length', 'Content-Range', 'Accept-Ranges', 'Last-Modified', 'ETag'] as $h) {
+            if ($resp->hasHeader($h)) {
+                $outHeaders[$h] = $resp->getHeaderLine($h);
+            }
+        }
+
+        $body = $resp->getBody();
+        return new StreamedResponse(function () use ($body) {
+            while (!$body->eof()) {
+                echo $body->read(8192);
+                if (function_exists('ob_flush')) { @ob_flush(); }
+                flush();
+            }
+        }, $status, $outHeaders);
+    }
+
+    // === Fallback: Server sumber tidak support Range ===
+    // Ambil file penuh, lalu potong manual sesuai Range request
+    $fileContents = $resp->getBody()->getContents();
+    $fileSize = strlen($fileContents);
+
+    if ($rangeHeader && preg_match('/bytes=(\d+)-(\d*)/', $rangeHeader, $matches)) {
+        $start = (int)$matches[1];
+        $end = $matches[2] !== '' ? (int)$matches[2] : ($fileSize - 1);
+    } else {
+        $start = 0;
+        $end = $fileSize - 1;
+    }
+
+    // Pastikan batas tidak lebih dari ukuran file
+    $start = max(0, $start);
+    $end = min($end, $fileSize - 1);
+
+    $length = $end - $start + 1;
+    $partialContent = substr($fileContents, $start, $length);
+
+    $headers = [
+        'Content-Type' => $contentType,
+        'Content-Disposition' => "inline; filename=\"{$filename}\"",
+        'X-Content-Type-Options' => 'nosniff',
+        'Accept-Ranges' => 'bytes',
+        'Content-Range' => "bytes $start-$end/$fileSize",
+        'Content-Length' => $length,
+    ];
+
+    return response($partialContent, 206, $headers);
+}
