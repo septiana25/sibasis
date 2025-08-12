@@ -18,8 +18,8 @@
                         @csrf
                         <div class="row g-2 align-items-end">
                             <div class="col-md-10">
-                                <label for="judul" class="form-label">Cari Judul Skripsi</label>
-                                <input type="text" name="judul" id="judul" class="form-control form-control-lg" value="{{ request('judul') }}" placeholder="Contoh: Teknologi Pertanian">
+                                <label for="judul" class="form-label">Judul Skripsi</label>
+                                <input type="text" name="judul" id="judul" class="form-control form-control-lg" value="{{ request('judul') }}" placeholder="Contoh: Analisis Pelafalan">
                             </div>
                             <div class="col-md-2">
                                 <button type="submit" class="btn btn-primary w-100 mt-md-4 btn-lg"><i class="bi bi-search"></i> <span class="d-md-none d-lg-inline">Cari</span></button>
@@ -31,7 +31,7 @@
                                     <option value="">-- Pilih Fakultas --</option>
                                     @foreach ($fakultasList as $key => $fak)
                                     <option value="{{ $fak['id'] }}" {{ request('fakultas') == $fak['id'] ? 'selected' : '' }}>
-                                        {{ $fak['nama'] }}
+                                        {{ $fak['nama_fakultas'] }}
                                     </option>
                                     @endforeach
                                 </select>
@@ -40,11 +40,7 @@
                                 <label for="prodi" class="form-label">Jurusan</label>
                                 <select name="prodi" id="prodi" class="form-select">
                                     <option value="">-- Pilih Jurusan --</option>
-                                    @foreach ($prodiList as $key => $prodi)
-                                    <option value="{{ $prodi['id'] }}" {{ request('prodi') == $prodi['id'] ? 'selected' : '' }}>
-                                        {{ $prodi['nama'] }}
-                                    </option>
-                                    @endforeach
+                                    
                                 </select>
                             </div>
                             <div class="col-md-2 text-end">
@@ -189,4 +185,30 @@
         </div>
     </div>
 </div>
+<script>
+    // Semua data fakultas beserta jurusannya dari Laravel
+    const fakultasData = @json($fakultasList);
+
+    document.getElementById('fakultas').addEventListener('change', function () {
+        let fakultasId = parseInt(this.value);
+        let prodiDropdown = document.getElementById('prodi');
+
+        // Reset dropdown jurusan
+        prodiDropdown.innerHTML = '<option value="">-- Pilih Jurusan --</option>';
+
+        if (!isNaN(fakultasId)) {
+            // Cari fakultas yang dipilih
+            let selectedFakultas = fakultasData.find(f => f.id === fakultasId);
+            
+            if (selectedFakultas && selectedFakultas.prodi.length > 0) {
+                selectedFakultas.prodi.forEach(function (p) {
+                    let option = document.createElement('option');
+                    option.value = p.kode;
+                    option.textContent = p.nama_prodi;
+                    prodiDropdown.appendChild(option);
+                });
+            }
+        }
+    });
+</script>
 @endsection

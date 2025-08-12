@@ -137,7 +137,7 @@
     
             <!-- Copyright -->
             <div class="text-center p-4" style="background-color: rgba(0, 0, 0, 0.05);">
-                &copy; 2025 Copyright: <a href="https://uinssc.ac.id" target="_blank">UIN Siber Syekh Nurjati Cirebon</a>. All rights reserved.
+                &copy; 2025 Copyright: <a href="https://uinssc.ac.id" target="_blank">UIN Siber Syekh Nurjati Cirebon</a>. Code By
                 <a class="text-reset fw-bold" href="https://lupakoding.wordpress.com/" target="_blank">Ian Septiana</a>
             </div>
             <!-- Copyright -->

@@ -2,6 +2,7 @@
 namespace App\Services;
 
 use App\Models\Bookmark;
+use App\Models\Fakultas;
 use App\Models\SearchStatistic;
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\DB;
@@ -42,15 +43,16 @@ class SkripsiService{
             ['index' => 512, 'id' => 111, 'nama' => 'Akidah dan Filsafat Islam'],
         ];
 
+        $fakultasList = Fakultas::with('prodi')->get();
         $defaultYear = ['year' => 2025, 'year' => 2024, 'year' => 2023, 'year' => 2022, 'year' => 2021];
-
-        return [$defaultFakultas, $defaultProdi, $defaultYear];
+        
+        return [$defaultFakultas, $defaultProdi, $defaultYear, $fakultasList];
     } 
 
     public function searchSkripsiFromApi(array $queryParams)
     {
         $client = new Client();
-        $url = "https://opac.uinssc.ac.id/skbpp/api/get-dokumen";
+        $url = env('API_URL');
 
         try {
             $response = $client->get($url, [

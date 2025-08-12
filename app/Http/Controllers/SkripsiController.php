@@ -34,39 +34,14 @@ class SkripsiController extends Controller
     {
         $popular = $this->skripsiService->getTopSearchStatistics();
 
-        [$defaultFakultas, $defaultProdi, $defaultYear] = $this->skripsiService->getDropdown();
-    
-        // Cek apakah data sudah ada di session
-        $dropdown = session('dropdown');
-    
-        if (!$dropdown || !isset($dropdown['fakultas']) || !isset($dropdown['prodi'])) {
-            // Simpan data dummy ke session jika belum ada
-            session([
-                'dropdown' => [
-                    'fakultas' => $defaultFakultas,
-                    'prodi'    => $defaultProdi,
-                    'year'     => $defaultYear
-                ]
-            ]);
-    
-            $fakultasList = $defaultFakultas;
-            $prodiList    = $defaultProdi;
-            $yearList    = $defaultYear;
-        } else {
-            // Ambil dari session
-            $fakultasList = $dropdown['fakultas'];
-            $prodiList    = $dropdown['prodi'];
-            $yearList    = $dropdown['year'];
-        }
-
-                
+        [$defaultFakultas, $defaultProdi, $defaultYear, $fakultasList] = $this->skripsiService->getDropdown();
+              
 
         return view('skripsi.index', [
         'results' => session('skripsi_results') ?? false,
         'popularKeywords' => $popular,
         'fakultasList' => $fakultasList,
-        'prodiList' => $prodiList,
-        'yearList' => $yearList
+        'yearList' => $defaultYear
         ]);
     }
 
@@ -89,12 +64,7 @@ class SkripsiController extends Controller
                 throw new Exception("Data tidak ditemukan.");
             }
             
-            $dropdown = session('dropdown');
-            
-            if (!$dropdown || !isset($dropdown['fakultas']) || !isset($dropdown['prodi'])) {
-                /* return view('skripsi.index',  ['results' => false, 'popularKeywords' => $popular]); */
-                return redirect()->route('skripsi.index');
-            }
+            [$defaultFakultas, $defaultProdi, $defaultYear, $fakultasList] = $this->skripsiService->getDropdown();
             
             $fieldsToPush = [
                 'judul'    => 'judul_ta',
@@ -117,8 +87,8 @@ class SkripsiController extends Controller
         return view('skripsi.index',  [
             'results' => $resultsService, 
             'popularKeywords' => $popular,
-            'fakultasList' => $dropdown['fakultas'],
-            'prodiList' =>  $dropdown['prodi']
+            'fakultasList' => $fakultasList,
+            'yearList' => $defaultYear
         ]);
     }
 
