@@ -11,10 +11,10 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return redirect()->route('member.login');
+    return redirect()->route('login');
 });
 
-Route::middleware('logout.others:web')->group(function() {
+Route::middleware('logout.others:member')->group(function() {
     Route::get('/login', [MemberAuthController::class, 'showLoginForm'])->name('login');
     Route::post('/login', [MemberAuthController::class, 'login'])->name('member.login');
 });

@@ -17,8 +17,8 @@ class MemberAuthController extends Controller
 
     public function showLoginForm(){
 
-        $member_id = session('member_id') ?? false;
-        if ($member_id) {
+        // Cek apakah member sudah login menggunakan guard member
+        if (Auth::guard('member')->check()) {
             return redirect()->route('skripsi.index');
         }
 

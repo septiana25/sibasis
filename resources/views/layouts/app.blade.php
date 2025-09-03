@@ -25,7 +25,7 @@
     <div id="app">
         <nav class="navbar navbar-expand-md navbar-light bg-white shadow-sm">
             <div class="container">                
-                <a class="navbar-brand" href="{{ url('/') }}">
+                <a class="navbar-brand" href="{{ url('/skripsi') }}">
                     <div>
                     <i class="bi bi-book fs-3"></i>
                     <span class="fs-3 fw-bolder">{{ config('app.name', 'Laravel') }}</span>

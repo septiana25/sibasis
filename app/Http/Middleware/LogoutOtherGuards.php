@@ -16,18 +16,23 @@ class LogoutOtherGuards
      */
     public function handle($request, Closure $next, $currentGuard)
     {
+        //dd($currentGuard);
         // Ambil semua guard yang ada di config/auth.php
         $guards = array_keys(config('auth.guards'));
+        $hasLogout = false;
 
         foreach ($guards as $guard) {
             if ($guard !== $currentGuard && Auth::guard($guard)->check()) {
                 Auth::guard($guard)->logout();
+                $hasLogout = true;
             }
         }
 
-        // Amankan session
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
+        if ($hasLogout) {
+            // Amankan session
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+        }
 
         return $next($request);
     }
