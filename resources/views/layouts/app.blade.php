@@ -17,22 +17,25 @@
     <link href="https://fonts.bunny.net/css?family=Nunito" rel="stylesheet">
     <link href="{{ asset('bootstrap-icons/bootstrap-icons.min.css') }}" rel="stylesheet">
 
-
     <!-- Scripts -->
     @vite(['resources/sass/app.scss', 'resources/js/app.js'])
 </head>
 <body>
     <div id="app">
-        <nav class="navbar navbar-expand-md navbar-light bg-white shadow-sm">
+        <!-- Modern Navbar -->
+        <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top">
             <div class="container">                
-                <a class="navbar-brand" href="{{ url('/skripsi') }}">
-                    <div>
-                    <i class="bi bi-book fs-3"></i>
-                    <span class="fs-3 fw-bolder">{{ config('app.name', 'Laravel') }}</span>
+                <a class="navbar-brand d-flex align-items-center" href="{{ url('/skripsi') }}">
+                    <div class="brand-icon me-3">
+                        <i class="bi bi-book text-primary fs-2"></i>
                     </div>
-                
+                    <div class="brand-text">
+                        <span class="fw-bold fs-4 text-dark">{{ config('app.name', 'Laravel') }}</span>
+                        <div class="brand-subtitle text-muted small">Perpus Pusat UIN SSC</div>
+                    </div>
                 </a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="{{ __('Toggle navigation') }}">
+                
+                <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="{{ __('Toggle navigation') }}">
                     <span class="navbar-toggler-icon"></span>
                 </button>
 
@@ -40,49 +43,63 @@
                     <!-- Left Side Of Navbar -->
                     <ul class="navbar-nav me-auto">
                         <li class="nav-item">
-                                <h4 class="m-0">Perpus Pusat UIN SSC</h4>   
+                            <a class="nav-link fw-semibold" href="{{ url('/skripsi') }}">
+                                <i class="bi bi-house me-1"></i>Beranda
+                            </a>
                         </li>
                     </ul>
 
                     <!-- Right Side Of Navbar -->
-                    <ul class="navbar-nav ms-auto">
+                    <ul class="navbar-nav ms-auto align-items-center">
                         <!-- Authentication Links -->
                         @guest
                             @if (Route::has('login'))
                                 <li class="nav-item">
-                                    <a class="nav-link" href="{{ route('login') }}">{{ __('Login') }}</a>
+                                    <a class="nav-link fw-semibold" href="{{ route('login') }}">
+                                        <i class="bi bi-box-arrow-in-right me-1"></i>{{ __('Login') }}
+                                    </a>
                                 </li>
                             @endif
 
                             @if (Route::has('register'))
                                 <li class="nav-item">
-                                    <a class="nav-link" href="{{ route('register') }}">{{ __('Register') }}</a>
+                                    <a class="nav-link fw-semibold" href="{{ route('register') }}">
+                                        <i class="bi bi-person-plus me-1"></i>{{ __('Register') }}
+                                    </a>
                                 </li>
                             @endif
                         @else
                             @auth('web')
                                 <li class="nav-item">
-                                        <a class="nav-link" href="">Upload File</a>
+                                    <a class="nav-link fw-semibold" href="">
+                                        <i class="bi bi-upload me-1"></i>Upload File
+                                    </a>
                                 </li>
                             @endauth
+                            
                             <li class="nav-item dropdown">
-                                <a id="navbarDropdown" class="nav-link dropdown-toggle fs-6" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre>
-                                    @auth('web')
-                                        {{ Auth::user()->name }}
-                                    @endauth
-                                    @auth('member')
-                                        {{ Auth::guard('member')->user()->member_name }}
-                                    @endauth
-                                    
+                                <a id="navbarDropdown" class="nav-link dropdown-toggle fw-semibold d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre>
+                                    <div class="user-avatar me-2">
+                                        <i class="bi bi-person-circle fs-5 text-primary"></i>
+                                    </div>
+                                    <span>
+                                        @auth('web')
+                                            {{ Auth::user()->name }}
+                                        @endauth
+                                        @auth('member')
+                                            {{ Auth::guard('member')->user()->member_name }}
+                                        @endauth
+                                    </span>
                                 </a>
 
-                                <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                                <div class="dropdown-menu dropdown-menu-end border-0 shadow-lg" aria-labelledby="navbarDropdown">
                                     @auth('member')    
-                                        <a class="dropdown-item" href="{{ route('member.dashboard') }}">
-                                            {{ __('Dashboard') }}
+                                        <a class="dropdown-item d-flex align-items-center" href="{{ route('member.dashboard') }}">
+                                            <i class="bi bi-speedometer2 me-2"></i>{{ __('Dashboard') }}
                                         </a>
                                     @endauth
-                                    <a class="dropdown-item" href="
+                                    <hr class="dropdown-divider">
+                                    <a class="dropdown-item d-flex align-items-center text-danger" href="
                                         @auth('web')
                                             {{ route('admin.logout') }}
                                         @endauth
@@ -92,7 +109,7 @@
                                     "
                                        onclick="event.preventDefault();
                                                      document.getElementById('logout-form').submit();">
-                                        {{ __('Logout') }}
+                                        <i class="bi bi-box-arrow-right me-2"></i>{{ __('Logout') }}
                                     </a>
 
                                     <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
@@ -101,49 +118,74 @@
                                 </div>
                             </li>
                         @endguest
-                    </div>
-                    <div class="d-flex align-items-center ms-3">
-                        <button class="btn btn-lg p-0" onclick="toggleDarkMode()" style="line-height: 1;">
-                            <i id="darkModeIcon" class="bi bi-brightness-high"></i>
-                        </button>
-                    </div>
-                </ul>
+                        
+                        <!-- Theme Toggle -->
+                        <li class="nav-item ms-3">
+                            <button class="btn btn-outline-primary btn-sm rounded-circle" onclick="toggleDarkMode()" title="Toggle Theme">
+                                <i id="darkModeIcon" class="bi bi-brightness-high"></i>
+                            </button>
+                        </li>
+                    </ul>
+                </div>
             </div>
         </nav>
         
-        <main class="py-3">
+        <main>
             @if (session('error'))
             <div class="container mt-4">
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    <strong>{{ Auth::user()->name }}
-                        @auth('member')
-                            {{ Auth::guard('member')->user()->member_name }}
-                        @endauth</strong> {{ session('error') }}
+                <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm" role="alert">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        <div>
+                            <strong>
+                                @auth('web')
+                                    {{ Auth::user()->name }}
+                                @endauth
+                                @auth('member')
+                                    {{ Auth::guard('member')->user()->member_name }}
+                                @endauth
+                            </strong> {{ session('error') }}
+                        </div>
+                    </div>
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                  </div>
+                </div>
             </div>
             @endif
+            
+            @if (session('success'))
+            <div class="container mt-4">
+                <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm" role="alert">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-check-circle me-2"></i>
+                        <div>{{ session('success') }}</div>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            </div>
+            @endif
+            
             @yield('content')
         </main>
 
-            <!-- Footer -->
-        <footer class="text-center text-lg-start bg-body-tertiary text-muted">
-            <!-- Section: Social media -->
-            <!-- Section: Social media -->
-    
-            <!-- Section: Links  -->
-
-            <!-- Section: Links  -->
-    
-            <!-- Copyright -->
-            <div class="text-center p-4" style="background-color: rgba(0, 0, 0, 0.05);">
-                &copy; 2025 Copyright: <a href="https://uinssc.ac.id" target="_blank">UIN Siber Syekh Nurjati Cirebon</a>. Code By
-                <a class="text-reset fw-bold" href="https://lupakoding.wordpress.com/" target="_blank">Ian Septiana</a>
+        <!-- Modern Footer -->
+        <footer class="bg-light border-top mt-5">
+            <div class="container py-4">
+                <div class="row align-items-center">
+                    <div class="col-md-6 text-center text-md-start">
+                        <p class="mb-0 text-muted">
+                            &copy; 2025 <strong>UIN Siber Syekh Nurjati Cirebon</strong>
+                        </p>
+                    </div>
+                    <div class="col-md-6 text-center text-md-end">
+                        <p class="mb-0 text-muted">
+                            Code by <a href="https://lupakoding.wordpress.com/" target="_blank" class="text-decoration-none fw-bold">Ian Septiana</a>
+                        </p>
+                    </div>
+                </div>
             </div>
-            <!-- Copyright -->
         </footer>
-            <!-- Footer -->
     </div>
+    
     <script>
     document.addEventListener("DOMContentLoaded", function () {
         const body = document.body;
@@ -162,5 +204,9 @@
     </script>
     <script src="{{ asset('js/darkmode.js') }}"></script>
     
+    <!-- Custom Navbar Styles -->
+    <style>
+
+    </style>
 </body>
 </html>

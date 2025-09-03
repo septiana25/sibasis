@@ -1,0 +1,77 @@
+html, body {
+    height: 100%;
+    margin: 0;
+}
+
+
+#app {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+footer {
+    margin-top: auto;
+}
+
+html[data-bs-theme="dark"] body {
+        background: #121212;
+    }
+
+
+html[data-bs-theme="dark"] nav {
+  background-color: #1e1e1e !important;
+}
+
+/* Card dalam dark mode */
+html[data-bs-theme="dark"] .card {
+  background-color: #1f1f1f;
+  color: #f1f1f1;
+  border-color: #444;
+}
+
+/* Card footer */
+html[data-bs-theme="dark"] .card-footer {
+  background-color: transparent;
+  border-top: 1px solid #444;
+}
+
+/* Tombol dalam dark mode */
+html[data-bs-theme="dark"] .btn-primary {
+  background-color: #0d6efd;
+  border-color: #0d6efd;
+}
+
+html[data-bs-theme="dark"] .btn-primary:hover {
+  background-color: #0b5ed7;
+}
+
+/* Success button */
+html[data-bs-theme="dark"] .btn-success {
+  background-color: #198754;
+  border-color: #198754;
+}
+
+html[data-bs-theme="dark"] .btn-success:hover {
+  background-color: #157347;
+}
+
+/* outline dark button */
+html[data-bs-theme="dark"] .btn-dark {
+  color: #e0e0e0;
+  border-color: #e0e0e0;
+}
+
+html[data-bs-theme="dark"] .btn-dark:hover {
+  background-color: #e0e0e0;
+  color: #121212;
+}
+
+.card h5 {
+  font-size: 1.05rem;
+  line-height: 1.4;
+}
+
+
+
+
