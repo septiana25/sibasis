@@ -168,7 +168,7 @@
         </main>
 
         <!-- Modern Footer -->
-        <footer class="bg-light border-top mt-5">
+        <footer class="bg-light border-top mt-auto">
             <div class="container py-4">
                 <div class="row align-items-center">
                     <div class="col-md-6 text-center text-md-start">
