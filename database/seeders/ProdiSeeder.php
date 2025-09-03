@@ -76,7 +76,7 @@ class ProdiSeeder extends Seeder
             Prodi::create([
                 'id_fakultas' => $value['id_fakultas'],
                 'kode' => $value['kode'],
-                'nama_prodi' => $value['nama']
+                'nama_prodi' => $value['nama_prodi']
             ]);
         }
     }

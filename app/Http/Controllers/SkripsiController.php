@@ -34,7 +34,7 @@ class SkripsiController extends Controller
     {
         $popular = $this->skripsiService->getTopSearchStatistics();
 
-        [$defaultFakultas, $defaultProdi, $defaultYear, $fakultasList] = $this->skripsiService->getDropdown();
+        [$defaultYear, $fakultasList] = $this->skripsiService->getDropdown();
               
 
         return view('skripsi.index', [
@@ -64,7 +64,7 @@ class SkripsiController extends Controller
                 throw new Exception("Data tidak ditemukan.");
             }
             
-            [$defaultFakultas, $defaultProdi, $defaultYear, $fakultasList] = $this->skripsiService->getDropdown();
+            [$defaultYear, $fakultasList] = $this->skripsiService->getDropdown();
             
             $fieldsToPush = [
                 'judul'    => 'judul_ta',

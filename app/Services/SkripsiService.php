@@ -25,28 +25,11 @@ class SkripsiService{
             ['index' => 600, 'id' => 6, 'nama' =>  'S2'],
             ['index' => 700, 'id' => 7, 'nama' =>  'S3'],
         ];
-    
-        $defaultProdi = [
-            ['index' => 100, 'id' => 101, 'nama' => 'Pendidikan Agama Islam'],
-            ['index' => 100, 'id' => 102, 'nama' => 'Pendidikan Bahasa Arab'],
-            ['index' => 100, 'id' => 103, 'nama' => 'Tadris Bahasa Inggris'],
-            ['index' => 100, 'id' => 104, 'nama' => 'Tadris Ilmu Pengetahuan'],
-            ['index' => 100, 'id' => 105, 'nama' => 'Tadris Matematika'],
-            ['index' => 100, 'id' => 106, 'nama' => 'Tadris Biologi'],
-            ['index' => 100, 'id' => 107, 'nama' => 'Pendidikan Guru Madrasah Ibtidaiyah'],
-            ['index' => 100, 'id' => 108, 'nama' => 'Pendidikan Islam Anak Usia Dini'],
-            ['index' => 100, 'id' => 109, 'nama' => 'Manajemen Pendidikan Islam'],
-            ['index' => 100, 'id' => 110, 'nama' => 'Tadris Bahasa Indonesia'],
-            ['index' => 100, 'id' => 111, 'nama' => 'Tadris Kimia'],
-            ['index' => 511, 'id' => 111, 'nama' => 'Sejarah Peradaban Islam'],
-            ['index' => 301, 'id' => 111, 'nama' => 'Sejarah Peradaban Islam'],
-            ['index' => 512, 'id' => 111, 'nama' => 'Akidah dan Filsafat Islam'],
-        ];
 
         $fakultasList = Fakultas::with('prodi')->get();
         $defaultYear = ['year' => 2025, 'year' => 2024, 'year' => 2023, 'year' => 2022, 'year' => 2021];
         
-        return [$defaultFakultas, $defaultProdi, $defaultYear, $fakultasList];
+        return [$defaultYear, $fakultasList];
     } 
 
     public function searchSkripsiFromApi(array $queryParams)
