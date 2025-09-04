@@ -214,6 +214,10 @@
                                 <div class="tip-item">
                                     <i class="bi bi-lightbulb"></i>
                                     <span>Pilih tahun yang relevan</span>
+                                </div> 
+                                <div class="tip-item">
+                                    <i class="bi bi-lightbulb"></i>
+                                    <span>Kosongkan semua filter untuk menampilkan semua skripsi</span>
                                 </div>
                             </div>
                         </div>
