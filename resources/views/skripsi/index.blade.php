@@ -80,7 +80,7 @@
                                         <label for="year" class="filter-label">
                                             <i class="bi bi-calendar me-2"></i>Tahun
                                         </label>
-                                        <select id="year" class="filter-select">
+                                        <select id="year" name="tahun" class="filter-select">
                                             <option value="">Semua Tahun</option>
                                             @for ($year = date('Y'); $year >= 2015; $year--)
                                                 <option value="{{ $year }}">{{ $year }}</option>

@@ -55,6 +55,7 @@ class SkripsiController extends Controller
         if ($request->filled('page'))     $queryParams['page'] = $request->input('page');
         if ($request->filled('fakultas')) $queryParams['fakultas'] = $request->input('fakultas');
         if ($request->filled('prodi'))    $queryParams['prodi'] = $request->input('prodi');
+        if ($request->filled('tahun'))     $queryParams['tahun'] = $request->input('tahun');
         
         try {
             $popular = $this->skripsiService->getTopSearchStatistics();
@@ -70,6 +71,7 @@ class SkripsiController extends Controller
                 'judul'    => 'judul_ta',
                 'fakultas' => 'fakultas',
                 'prodi'    => 'prodi',
+                'tahun'     => 'tahun',
             ];
             
             foreach ($fieldsToPush as $paramKey => $resultKey) {

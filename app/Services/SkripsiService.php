@@ -36,7 +36,7 @@ class SkripsiService{
     {
         $client = new Client();
         $url = env('API_URL');
-
+        //dd($queryParams);
         try {
             $response = $client->get($url, [
                 'query' => $queryParams
