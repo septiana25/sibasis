@@ -11,9 +11,9 @@
                 <!-- Centered Hero Content -->
                 <div class="hero-content text-center">
                     <div class="hero-icon mb-4">
-                        <i class="bi bi-search-heart"></i>
+                        <i class="bi bi-search-heart" id="heroSearchIcon"></i>
                     </div>
-                    <h1 class="hero-title">Cari Skripsi</h1>
+                    <h1 class="hero-title" id="heroTitle"><span id="wordCari">Cari</span> Skripsi <span class="d-none" id="heroTitleSpan"> Sedang Kami Cari......</span></h1>
                     <p class="hero-subtitle">Temukan ribuan skripsi dari berbagai fakultas dan jurusan</p>
                 </div>
                 
@@ -38,7 +38,9 @@
                                     autocomplete="off"
                                 >
                                 <button type="submit" class="search-button">
-                                    <i class="bi bi-search me-2"></i>Cari
+                                    <i class="bi bi-search me-2" id="searchIcon"></i>
+                                    <span class="spinner-border spinner-border-sm me-2 d-none" role="status" aria-hidden="true" id="searchSpinner"></span>
+                                    Cari
                                 </button>
                             </div>
                         </div>
@@ -323,6 +325,60 @@
                 });
             }
         }
+    });
+
+    // Animated Search Button
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.querySelector('.search-form');
+        const button = form?.querySelector('.search-button');
+        const icon = document.getElementById('searchIcon');
+        const spinner = document.getElementById('searchSpinner');
+        const heroIcon = document.getElementById('heroSearchIcon');
+        const wordCari = document.getElementById('wordCari');
+        const heroTitleSpan = document.getElementById('heroTitleSpan');
+
+        function startLoading() {
+          if (!button) return;
+          if (!button.hasAttribute('disabled')) {
+            button.setAttribute('disabled', 'disabled');
+            button.classList.add('disabled');
+          }
+          if (icon) icon.classList.add('d-none');
+          if (spinner) spinner.classList.remove('d-none');
+
+          // Swap hero title parts
+          if (wordCari) wordCari.classList.add('d-none');
+          if (heroTitleSpan) heroTitleSpan.classList.remove('d-none');
+
+          // Subtle visual cue on the hero icon + add a small spinner next to it
+          if (heroIcon) {
+            // swap heart icon to repeat icon during loading
+            heroIcon.classList.remove('bi-search-heart');
+            heroIcon.classList.add('opacity-50');
+            if (!document.getElementById('heroSpinner')) {
+              const hs = document.createElement('span');
+              hs.id = 'heroSpinner';
+              hs.className = 'spinner-border spinner-border-lg align-middle ms-2';
+              hs.setAttribute('role', 'status');
+              hs.setAttribute('aria-hidden', 'true');
+              heroIcon.parentNode.appendChild(hs);
+            }
+          }
+        }
+
+        if (form) {
+          form.addEventListener('submit', function() {
+            startLoading();
+            // Let the normal form submission proceed
+          });
+        }
+
+        // Restore state when navigating back (bfcache)
+        window.addEventListener('pageshow', function(e) {
+          if (e.persisted) {
+            stopLoading();
+          }
+        });
     });
 
     // Enhanced Search Experience
