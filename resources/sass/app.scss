@@ -1,10 +1,11 @@
-// Fonts
+// Our variables/utilities must be loaded first with @use
+@use './variables' as *;
+
+// Fonts (plain CSS import is fine)
 @import url('https://fonts.bunny.net/css?family=Nunito');
 
-// Variables
-@import 'variables';
+// Bootstrap via precompiled CSS to avoid Sass @import deprecation warnings from Bootstrap's SCSS
+@import 'bootstrap/dist/css/bootstrap.min.css';
 
-// Bootstrap
-@import 'bootstrap/scss/bootstrap';
-
+// Bootstrap Icons CSS
 @import 'bootstrap-icons/font/bootstrap-icons.css';
