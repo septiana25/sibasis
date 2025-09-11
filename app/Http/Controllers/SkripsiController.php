@@ -83,6 +83,7 @@ class SkripsiController extends Controller
             session(['skripsi_results' => $resultsService]);
             
         } catch (\Exception $e) {
+            session(['skripsi_results' => []]);
             return redirect()->route('skripsi.index')->with('error', $e->getMessage());
         }
 
