@@ -23,32 +23,3 @@
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^ index.php [L]
 </IfModule>
-
-<IfModule mod_expires.c>
-    ExpiresActive On
-    ExpiresDefault "access plus 1 month"
-
-    # Images
-    ExpiresByType image/jpeg "access plus 1 month"
-    ExpiresByType image/png "access plus 1 month"
-    ExpiresByType image/gif "access plus 1 month"
-    ExpiresByType image/webp "access plus 1 month"
-    ExpiresByType image/svg+xml "access plus 1 month"
-
-    # CSS & JS
-    ExpiresByType text/css "access plus 1 month"
-    ExpiresByType application/javascript "access plus 1 month"
-    ExpiresByType text/javascript "access plus 1 month"
-
-    # Fonts
-    ExpiresByType font/woff "access plus 1 month"
-    ExpiresByType font/woff2 "access plus 1 month"
-    ExpiresByType font/ttf "access plus 1 month"
-</IfModule>
-
-<IfModule mod_headers.c>
-    <FilesMatch "\.(js|css|jpg|jpeg|png|gif|webp|svg|woff2?|ttf)$">
-        #31536000
-        Header set Cache-Control "public, max-age=2592000, immutable"
-    </FilesMatch>
-</IfModule>
