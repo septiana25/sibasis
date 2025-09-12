@@ -140,7 +140,7 @@
                                         <i class="bi bi-file-earmark-text"></i>
                                     </div>
                                     <div class="card-title">
-                                        <a href="{{ route('skripsi.show', $index) }}" class="title-link">
+                                        <a href="{{ route('skripsi.show', $index) }}" class="title-link text-uppercase">
                                             {{ $item['judul_ta'] }}
                                         </a>
                                     </div>

@@ -6,28 +6,17 @@
 
 <div class="content-section">
     <div class="container">
-        <a href="{{ route('skripsi.index') }}" class="btn btn-sm btn-outline-secondary mb-3">← Kembali</a>
-
-        <!-- Detail Header (aligned with results header style) -->
-        <div class="results-header mb-3">
-            <div class="results-title">
-                <i class="bi bi-file-earmark-text"></i>
-                <span>Detail Skripsi</span>
-            </div>
-            <div class="results-summary">
-                <strong class="text-success-emphasis text-uppercase">{{ $data['judul_ta'] }}</strong>
-            </div>
-        </div>
+        <a href="{{ route('skripsi.index') }}" class="btn btn-sm btn-outline-primary mb-3">← Kembali</a>
 
         <!-- Detail Card aligned with index result-card style -->
         <div class="result-card">
             <div class="card-header d-flex justify-content-between align-items-start">
                 <div class="d-flex align-items-center">
                     <div class="card-icon">
-                        <i class="bi bi-person-lines-fill"></i>
+                        <i class="bi bi-file-earmark-text"></i>
                     </div>
                     <div class="card-title ms-2">
-                        <span class="title-link">Informasi Penulis</span>
+                        <span class="title-link text-uppercase">{{ $data['judul_ta'] }}</span>
                     </div>
                 </div>
                 <a href="{{ route('skripsi.bookmark', $index) }}" class="link-danger" aria-label="Bookmark">
