@@ -4,53 +4,100 @@
 
 @section('content')
 
-<div class="container mt-4">
-    <a href="{{ route('skripsi.index') }}" class="btn btn-sm btn-outline-secondary mb-3">← Kembali</a>
-    <div class="card">
-        <div class="card-body">
-            <div class="card-title d-flex justify-content-between">
-                <h4 class="text-success-emphasis text-uppercase"><strong>{{ $data['judul_ta'] }}</strong></h4>
-                <a href="{{ route('skripsi.bookmark', $index) }}" class="link-danger">
-                    <h3 id="bookmark"><i class="bi bi-bookmark{{ ($data['bookmarked'] ?? false) ? '-fill' : '' }}"></i></h3>
-                </a>
+<div class="content-section">
+    <div class="container">
+        <a href="{{ route('skripsi.index') }}" class="btn btn-sm btn-outline-secondary mb-3">← Kembali</a>
+
+        <!-- Detail Header (aligned with results header style) -->
+        <div class="results-header mb-3">
+            <div class="results-title">
+                <i class="bi bi-file-earmark-text"></i>
+                <span>Detail Skripsi</span>
             </div>
-            <p class="mb-1"><strong>Penulis:</strong> {{ $data['nama'] }}</p>
-            <p class="mb-1"><strong>Nim:</strong> {{ $data['nim'] }}</p>
-            <p class="mb-1"><strong>Jurusan:</strong> {{ $data['program_studi'] }}</p>
-            <p class="mb-3"><strong>Fakultas:</strong> {{ $data['fakultas'] }}</p>
+            <div class="results-summary">
+                <strong class="text-success-emphasis text-uppercase">{{ $data['judul_ta'] }}</strong>
+            </div>
+        </div>
 
-
-            <h5><i class="bi bi-file-earmark-pdf"></i> Pratinjau Skripsi (PDF)</h5>
-            <div class="position-relative border p-2 rounded" style="height: 100vh; overflow: hidden;">
-    
-                <!-- Placeholder Boostrap 5.3 -->
-                <div id="iframe-placeholder" class="position-absolute top-0 start-0 w-100 h-100 p-3">
-                    <div class="placeholder-glow h-100 w-100 rounded bg-light">
-                        <div class="h-100 w-100 placeholder"></div>
+        <!-- Detail Card aligned with index result-card style -->
+        <div class="result-card">
+            <div class="card-header d-flex justify-content-between align-items-start">
+                <div class="d-flex align-items-center">
+                    <div class="card-icon">
+                        <i class="bi bi-person-lines-fill"></i>
+                    </div>
+                    <div class="card-title ms-2">
+                        <span class="title-link">Informasi Penulis</span>
                     </div>
                 </div>
-                {{-- pdf.js --}}
-                <iframe id="viewer-frame"
-                        src="{{ asset('pdfjs/web/viewer.html') }}?file={{ urlencode(route('skripsi.stream', ['index' => $index])) }}"
-                        width="100%"
-                        height="100%"
-                        frameborder="0"
-                        sandbox="allow-scripts allow-same-origin"
-                        onload="document.getElementById('iframe-placeholder').style.display='none';">
-                </iframe>
-            
-                <!-- Iframe PDF -->
-                {{-- <iframe 
-                    src="{{ asset($pdf['url_file']) }}#toolbar=0&navpanes=0&scrollbar=0" 
-                    width="100%" 
-                    height="100%" 
-                    frameborder="0"
-                    onload="document.getElementById('iframe-placeholder').style.display='none';">
-                </iframe> --}}
+                <a href="{{ route('skripsi.bookmark', $index) }}" class="link-danger" aria-label="Bookmark">
+                    <h3 id="bookmark" class="mb-0"><i class="bi bi-bookmark{{ ($data['bookmarked'] ?? false) ? '-fill' : '' }}"></i></h3>
+                </a>
             </div>
-            
-            
-            <small class="text-muted text-danger-emphasis">* File ini hanya dapat dibaca, tidak dapat diunduh atau dicetak.</small>
+
+            <div class="card-body">
+                <div class="meta-grid">
+                    <div class="meta-item">
+                        <i class="bi bi-person"></i>
+                        <span class="meta-label">Penulis:</span>
+                        <span class="meta-value">{{ $data['nama'] }}</span>
+                    </div>
+                    <div class="meta-item">
+                        <i class="bi bi-person-circle"></i>
+                        <span class="meta-label">NIM:</span>
+                        <span class="meta-value">{{ $data['nim'] }}</span>
+                    </div>
+                    <div class="meta-item">
+                        <i class="bi bi-mortarboard"></i>
+                        <span class="meta-label">Program Studi:</span>
+                        <span class="meta-value">{{ $data['program_studi'] }}</span>
+                    </div>
+                    <div class="meta-item">
+                        <i class="bi bi-building"></i>
+                        <span class="meta-label">Fakultas:</span>
+                        <span class="meta-value">{{ $data['fakultas'] }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-header">
+                <div class="card-icon">
+                    <i class="bi bi-file-earmark-pdf"></i>
+                </div>
+                <div class="card-title">
+                    <span class="title-link">Pratinjau Skripsi (PDF)</span>
+                </div>
+            </div>
+
+            <div class="card-body">
+                <div class="position-relative border p-2 rounded" style="height: 100vh; overflow: hidden;">
+                    <!-- Placeholder Boostrap 5.3 -->
+                    <div id="iframe-placeholder" class="position-absolute top-0 start-0 w-100 h-100 p-3">
+                        <div class="placeholder-glow h-100 w-100 rounded bg-light">
+                            <div class="h-100 w-100 placeholder"></div>
+                        </div>
+                    </div>
+                    {{-- pdf.js --}}
+                    <iframe id="viewer-frame"
+                            src="{{ asset('pdfjs/web/viewer.html') }}?file={{ urlencode(route('skripsi.stream', ['index' => $index])) }}"
+                            width="100%"
+                            height="100%"
+                            frameborder="0"
+                            sandbox="allow-scripts allow-same-origin"
+                            onload="document.getElementById('iframe-placeholder').style.display='none';">
+                    </iframe>
+                
+                    <!-- Iframe PDF -->
+                    {{-- <iframe 
+                        src="{{ asset($pdf['url_file']) }}#toolbar=0&navpanes=0&scrollbar=0" 
+                        width="100%" 
+                        height="100%" 
+                        frameborder="0"
+                        onload="document.getElementById('iframe-placeholder').style.display='none';">
+                    </iframe> --}}
+                </div>
+                <small class="text-muted text-danger-emphasis d-inline-block mt-2">* File ini hanya dapat dibaca, tidak dapat diunduh atau dicetak.</small>
+            </div>
         </div>
     </div>
 </div>
