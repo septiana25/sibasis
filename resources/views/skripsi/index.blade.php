@@ -127,7 +127,7 @@
                         </div>
                         <div class="results-summary">
                             Ditemukan <strong>{{ $results['total'] }}</strong> skripsi, kata kunci
-                            <strong>{{ trim(($results['judul_ta'] ?? '') . ' ' . ($results['tahun'] ?? '')) ?: '' }}</strong>
+                            <strong>{{ trim(($results['judul_ta'] ?? '') . ' ' . ($results['tahun'] ?? '')) ?: 'semua' }}</strong>
                         </div>
                     </div>
 
