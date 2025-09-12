@@ -126,7 +126,8 @@
                             <span>Hasil Pencarian</span>
                         </div>
                         <div class="results-summary">
-                            Ditemukan <strong>{{ $results['total'] }}</strong> skripsi
+                            Ditemukan <strong>{{ $results['total'] }}</strong> skripsi, kata kunci
+                            <strong>{{ trim(($results['judul_ta'] ?? '') . ' ' . ($results['tahun'] ?? '')) ?: '' }}</strong>
                         </div>
                     </div>
 
