@@ -119,11 +119,32 @@ class SkripsiController extends Controller
         return view('skripsi.detail', ['data' => $detail, 'pdf' => $fileInfo, 'index' => $index]);
     }
 
+    /**
+     * Menjelaskan fungsi streamPdf:
+     *
+     * Fungsi ini bertugas untuk mengambil file PDF skripsi dari sumber eksternal (remote) dan mengirimkannya ke browser pengguna secara streaming.
+     * Fungsi ini juga mendukung permintaan partial content (HTTP Range), sehingga PDF bisa dipreview atau dilanjutkan (resume) di browser.
+     *
+     * Penjelasan langkah demi langkah:
+     * 1. Mengambil data hasil pencarian skripsi dari session berdasarkan $index.
+     * 2. Mengecek apakah ada file PDF yang valid. Jika tidak ada, kembalikan response 404.
+     * 3. Menyiapkan opsi permintaan HTTP, termasuk header User-Agent dan Range (jika ada).
+     * 4. Menggunakan Guzzle HTTP client untuk mengambil file PDF dari URL sumber secara streaming.
+     * 5. Jika terjadi error saat mengambil file (misal: server remote error), log error dan kembalikan response error ke pengguna.
+     * 6. Jika server remote mengembalikan status error (>=400), ambil cuplikan body error dan forward ke pengguna.
+     * 7. Jika berhasil, ambil header penting dari response remote (Content-Type, Content-Length, dsb).
+     * 8. Stream isi file PDF ke browser pengguna secara bertahap (chunked), agar efisien untuk file besar.
+     * 9. Response akan memiliki header yang sesuai agar browser bisa menampilkan PDF inline.
+     *
+     * Dengan cara ini, file PDF yang tidak berada di server aplikasi tetap bisa diakses pengguna dengan lancar dan aman.
+     */
     public function streamPdf(Request $request, $index)
     {
+        // 1. Ambil data session hasil pencarian skripsi
         $dataSession = session('skripsi_results') ?? [];
         [$detail, $fileInfo] = $this->skripsiService->getDocumentFromSession($index, $dataSession);
 
+        // 2. Cek ketersediaan file PDF
         if (!$fileInfo || empty($fileInfo['url_file'])) {
             return response('File PDF tidak tersedia.', 404);
         }
@@ -131,12 +152,13 @@ class SkripsiController extends Controller
         $url = $fileInfo['url_file'];
         $rangeHeader = $request->header('Range');
 
+        // 3. Siapkan opsi permintaan HTTP ke server remote
         $options = [
             'headers' => [
                 'User-Agent' => $request->header('User-Agent') ?? 'Laravel-Proxy/1.0',
             ],
             'stream' => true,
-            'http_errors' => false, // jangan throw exceptions utk 4xx/5xx
+            'http_errors' => false, // Jangan throw exception untuk error 4xx/5xx
             'allow_redirects' => true,
         ];
 
@@ -144,9 +166,11 @@ class SkripsiController extends Controller
             $options['headers']['Range'] = $rangeHeader;
         }
 
+        // 4. Ambil file PDF dari server remote
         try {
             $resp = $this->httpClient->request('GET', $url, $options);
         } catch (\Throwable $e) {
+            // 5. Jika gagal, log dan kembalikan error 502
             Log::error('Guzzle error fetching PDF', [
                 'url' => $url,
                 'index' => $index,
@@ -157,7 +181,7 @@ class SkripsiController extends Controller
 
         $status = $resp->getStatusCode();
 
-        // Jika remote mengembalikan error, forward status & sedikit body preview
+        // 6. Jika server remote error, forward status & cuplikan body
         if ($status >= 400) {
             $bodyPreview = '[no body]';
             try {
@@ -176,7 +200,7 @@ class SkripsiController extends Controller
                 ->header('Content-Type', $resp->getHeaderLine('Content-Type') ?: 'text/plain');
         }
 
-        // Ambil header penting dan stream body
+        // 7. Ambil header penting untuk response
         $contentType = $resp->getHeaderLine('Content-Type') ?: 'application/pdf';
         $filename = basename(parse_url($url, PHP_URL_PATH) ?: 'file.pdf');
 
@@ -192,6 +216,7 @@ class SkripsiController extends Controller
             }
         }
 
+        // 8. Stream isi file PDF ke browser
         $body = $resp->getBody();
         $streamed = new StreamedResponse(function () use ($body) {
             while (!$body->eof()) {
@@ -201,6 +226,7 @@ class SkripsiController extends Controller
             }
         }, $status, $outHeaders);
 
+        // 9. Kembalikan response streaming ke pengguna
         return $streamed;
     }
 
