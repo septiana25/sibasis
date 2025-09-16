@@ -47,7 +47,7 @@
                     <h1>
                         <i class="bi bi-mortarboard"></i>
                     </h1>
-                    <div class="card-title"><strong>Selamat datang di eBASIS aplikasi Baca Skripsi</strong></div>
+                    <div class="card-title"><strong>Selamat datang di SIBASIS aplikasi Baca Skripsi</strong></div>
                     <p>Gunakan <strong>NIM atau Anggota</strong> untuk login,</p> <strong>MEMBER</strong>
                 </div>
             </div>
