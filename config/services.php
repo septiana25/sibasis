@@ -35,4 +35,9 @@ return [
         ],
     ],
 
+    'mahasiswa_api' => [
+        'base_url' => env('MAHASISWA_API_BASE_URL'),
+        'token' => env('MAHASISWA_API_TOKEN'),
+    ],
+
 ];

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\SkripsiController;
+use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Auth\ConfirmPasswordController;
 use App\Http\Controllers\Auth\LoginController;
@@ -50,6 +51,14 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::middleware('auth:web')->group(function() {
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
         Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+
+        // Documents module
+        Route::get('/documents', [DocumentController::class, 'index'])->name('documents.index');
+        Route::get('/documents/create', [DocumentController::class, 'create'])->name('documents.create');
+        Route::post('/documents', [DocumentController::class, 'store'])->name('documents.store');
+        Route::get('/documents/export', [DocumentController::class, 'export'])->name('documents.export');
+        Route::post('/documents/lookup', [DocumentController::class, 'lookupByNim'])->name('documents.lookup');
+        Route::get('/documents/{document}', [DocumentController::class, 'show'])->name('documents.show');
     });
 });
 
