@@ -45,8 +45,10 @@ class DocumentController extends Controller
         $fakultas = $validated['fakultas'];
         $prodi = $validated['prodi'];
 
-        $storagePath = "{$tahun}/{$fakultas}/{$prodi}/{$nim}";
-        $filename = $nim . '_fulltext.pdf';
+        $matchFakultas = $this->getFakulByFakultas($fakultas);
+
+        $storagePath = "document/{$tahun}/{$matchFakultas['fakul']}/{$prodi}/{$nim}";
+        $filename = $nim . '_9_fulltext.pdf';
         $disk = 'public';
 
         // Ensure directory exists
@@ -170,6 +172,42 @@ class DocumentController extends Controller
             'fakultas' => $data['fakultas'] ?? $data['faculty'] ?? null,
             'prodi' => $data['prodi'] ?? $data['program_studi'] ?? $data['study_program'] ?? null,
         ]);
+    }
+
+    /**
+     * Cari kode fakul berdasarkan nilai fakultas dari request.
+     * Pencocokan dilakukan case-insensitive terhadap nama fakultas penuh maupun kode fakul.
+     */
+    private function getFakulByFakultas(string $fakultas): ?array
+    {
+        $defaultFakultas = [
+            ['id_fakultas' => 1, 'fakul' => 'FITK', 'fakultas' => 'ILMU TARBIYAH DAN KEGURUAN'], 
+            ['id_fakultas' => 2, 'fakul' => 'FEBI', 'fakultas' => 'EKONOMI DAN BISNIS ISLAM'], 
+            ['id_fakultas' => 3, 'fakul' => 'FS', 'fakultas' => 'SYARIAH'], 
+            ['id_fakultas' => 4, 'fakul' => 'FDKI', 'fakultas' => 'DAKWAH DAN KOMUNIKASI ISLAM'], 
+            ['id_fakultas' => 5, 'fakul' => 'FUA', 'fakultas' => 'USHULUDDIN DAN ADAB'], 
+            ['id_fakultas' => 6, 'fakul' =>  'S2', 'fakultas' => 'PASCASARJANA'],
+            ['id_fakultas' => 7, 'fakul' =>  'S3', 'fakultas' => 'PASCASARJANA'],
+        ];
+        
+        $normalized = strtolower(trim($fakultas));
+
+        foreach ($defaultFakultas as $item) {
+            // Cocokkan nama fakultas penuh
+            if (isset($item['fakultas']) && strtolower($item['fakultas']) === $normalized) {
+                return isset($item['fakul'], $item['id_fakultas'])
+                    ? ['id_fakultas' => $item['id_fakultas'], 'fakul' => $item['fakul']]
+                    : null;
+            }
+            // Atau jika request sudah berupa kode fakul, kembalikan apa adanya
+            if (isset($item['fakul']) && strtolower($item['fakul']) === $normalized) {
+                return isset($item['id_fakultas'])
+                    ? ['id_fakultas' => $item['id_fakultas'], 'fakul' => $item['fakul']]
+                    : null;
+            }
+        }
+
+        return null;
     }
 }
 
