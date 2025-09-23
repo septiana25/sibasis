@@ -168,9 +168,14 @@ class DocumentController extends Controller
         }
 
         return response()->json([
-            'nama' => $data['nama'] ?? $data['name'] ?? null,
-            'fakultas' => $data['fakultas'] ?? $data['faculty'] ?? null,
-            'prodi' => $data['prodi'] ?? $data['program_studi'] ?? $data['study_program'] ?? null,
+            'nama' => $data['nama'] ?? null,
+            'fakultas' => $data['fakultas'] ?? null,
+            'prodi' => $data['prodi']  ?? null,
+            'prodi_kode' => $data['prodi_kode']  ?? null,
+            'jenjang' => $data['jenjang']  ?? null,
+            'no_hp' => $data['no_hp']  ?? null,
+            'email' => $data['email']  ?? null,
+            'tempat_lahir' => $data['tempat_lahir']  ?? null,
         ]);
     }
 

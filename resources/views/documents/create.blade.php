@@ -34,9 +34,29 @@
                         <label for="nama" class="form-label">Nama</label>
                         <input type="text" name="nama" id="nama" class="form-control" value="{{ old('nama') }}" readonly required>
                     </div>
-                    
+
                     <div class="col-md-4">
-                        <label for="tahun" class="form-label">Tahun Data</label>
+                        <label for="hp" class="form-label">No Hp</label>
+                        <input type="text" name="hp" id="hp" class="form-control" value="{{ old('no_hp') }}" readonly required>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="text" name="email" id="email" class="form-control" value="{{ old('email') }}" readonly required>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label for="tempat_lahir" class="form-label">Tempat Lahir</label>
+                        <input type="text" name="tempat_lahir" id="tempat_lahir" class="form-control" value="{{ old('tempat_lahir') }}" readonly required>
+                    </div>
+                    
+                    <div class="col-md-8">
+                        <label for="tahun" class="form-label">Judul Skripsi</label>
+                        <input type="number" name="tahun" id="tahun" class="form-control" value="{{ old('tahun') }}" required>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label for="tahun" class="form-label">Tahun Skripsi</label>
                         <input type="number" name="tahun" id="tahun" class="form-control" value="{{ old('tahun') }}" required>
                     </div>
 
@@ -54,6 +74,8 @@
                         <label for="file" class="form-label">File PDF (max 10MB)</label>
                         <input type="file" name="file" id="file" accept="application/pdf" class="form-control" required>
                     </div>
+                    <input type="text" name="prodi_kode" id="prodi_kode" value="{{ old('prodi_kode') }}">
+                    <input type="text" name="jenjang" id="jenjang" value="{{ old('jenjang') }}">
                 </div>
                 <div class="mt-3">
                     <button type="submit" class="btn btn-primary">Simpan</button>
@@ -84,6 +106,11 @@ document.getElementById('btn-cek').addEventListener('click', async function() {
         document.getElementById('nama').value = data.nama || '';
         document.getElementById('fakultas').value = data.fakultas || '';
         document.getElementById('prodi').value = data.prodi || '';
+        document.getElementById('prodi_kode').value = data.prodi_kode || '';
+        document.getElementById('jenjang').value = data.jenjang || '';
+        document.getElementById('tempat_lahir').value = data.tempat_lahir || '';
+        document.getElementById('email').value = data.email || '';
+        document.getElementById('no_hp').value = data.no_hp || '';
     } catch (e) {
         alert('Data tidak ditemukan / error API');
     }
