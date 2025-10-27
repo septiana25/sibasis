@@ -764,5 +764,55 @@ See https://github.com/adobe-type-tools/cmap-resources
 
     </div> <!-- outerContainer -->
     <div id="printContainer"></div>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- ====== Proteksi UI ABATA ====== -->
+    <script>
+      let violationCount = 0;
+        function registerViolation(eventType) {
+            violationCount++;
+
+            Swal.fire({
+                icon: 'warning',
+                title: 'Peringatan!',
+                text: `Aksi "${eventType}" tidak diizinkan. Percobaan anda ${violationCount} dari 3 telah dicatat.`,
+                confirmButtonColor: '#2563eb'
+            });
+
+            // Jika pelanggaran ke-3, kirim data ke server dan logout
+            if (violationCount >= 4) {
+              Swal.fire({
+                            icon: 'error',
+                            title: 'Anda telah dikeluarkan!',
+                            text: 'Sesi Anda telah diakhiri karena pelanggaran berulang.',
+                            confirmButtonColor: '#dc2626'
+              }).then(() => {
+                window.location.href = '/violation-logout';
+              });
+            }
+        }
+    // ==== Disable Right Click ====
+    document.addEventListener('contextmenu', e => {e.preventDefault(); registerViolation('Klik Kanan');});
+
+    // ==== Disable Keyboard Shortcuts ====
+    document.addEventListener('keydown', e => {
+        if (
+            e.ctrlKey && ['u','s','c','x','v','U','S','C','X','V'].includes(e.key) ||
+            e.key === 'F12' ||
+            (e.ctrlKey && e.shiftKey && ['I','J'].includes(e.key))
+        ) {
+            e.preventDefault();
+            registerViolation('Keyboard Shortcuts');
+        }
+    });
+
+    // ==== Disable Copy, Cut, Paste, Select ====
+    ['copy','cut'].forEach(evt =>
+        document.addEventListener(evt, e => {e.preventDefault(); registerViolation(evt);})
+    );
+
+    // ==== Hide DevTools Shortcut Message ====
+    </script>
+    <!-- ====== End Proteksi ====== -->
+
   </body>
 </html>

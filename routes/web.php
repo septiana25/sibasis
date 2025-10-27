@@ -8,6 +8,7 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\MemberAuthController;
 use App\Http\Controllers\MemberDashboardController;
+use App\Http\Controllers\ViolationController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -33,6 +34,9 @@ Route::middleware('auth:member')->group(function() {
     Route::get('/skripsi/stream/{index}', [SkripsiController::class, 'streamPdf'])->name('skripsi.stream');
 
     Route::get('/member/dashboard', [MemberDashboardController::class, 'index'])->name('member.dashboard');
+
+    Route::post('violation-log',[ViolationController::class, 'log'])->name('violation-log');
+    Route::get('violation-logout',[ViolationController::class, 'logout'])->name('violation-logout');
 
     Route::post('/logout', [MemberAuthController::class, 'logout'])->name('logout');
 });

@@ -191,22 +191,84 @@
             </div>
         </footer>
     </div>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-    document.addEventListener("DOMContentLoaded", function () {
-        const body = document.body;
+        document.addEventListener("DOMContentLoaded", function () {
+            const body = document.body;
+            function handleScroll() {
+                if (window.scrollY > 50) {
+                    body.classList.add('scrolled');
+                } else {
+                    body.classList.remove('scrolled');
+                }
+            }
+            handleScroll(); // run once on load
+            window.addEventListener('scroll', handleScroll);
+        });
+    </script>
+    <!-- ====== Proteksi UI ABATA ====== -->
+    <script>
+        let violationCount = 0;
 
-        function handleScroll() {
-            if (window.scrollY > 50) {
-                body.classList.add('scrolled');
-            } else {
-                body.classList.remove('scrolled');
+        function registerViolation(eventType) {
+            violationCount++;
+
+            Swal.fire({
+                icon: 'warning',
+                title: 'Peringatan!',
+                text: `Aksi "${eventType}" tidak diizinkan. Percobaan ${violationCount}/3 telah dicatat.`,
+                confirmButtonColor: '#2563eb'
+            });
+
+            // Jika pelanggaran ke-3, kirim data ke server dan logout
+            if (violationCount >= 3) {
+                fetch('/violation-log', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({ count: violationCount })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.redirect) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Anda telah dikeluarkan!',
+                            text: 'Sesi Anda telah diakhiri karena pelanggaran berulang.',
+                            confirmButtonColor: '#dc2626'
+                        }).then(() => {
+                            window.location.href = data.redirect;
+                        });
+                    }
+                });
             }
         }
+        // ==== Disable Right Click ====
+        document.addEventListener('contextmenu', e => {
+            e.preventDefault()
+            registerViolation('Right Click');
+        });
 
-        handleScroll(); // run once on load
-        window.addEventListener('scroll', handleScroll);
-    });
+        // ==== Disable Keyboard Shortcuts ====
+        document.addEventListener('keydown', e => {
+            if (
+                e.ctrlKey && ['u','s','x','v','U','S','X','V'].includes(e.key) ||
+                e.key === 'F12' ||
+                (e.ctrlKey && e.shiftKey && ['I','J'].includes(e.key))
+            ) {
+                e.preventDefault();
+                registerViolation('Keyboard Shortcut');
+            }
+        });
+        // ==== Disable Copy, Cut, Paste, Select ====
+        /* ['copy'].forEach(evt =>
+            document.addEventListener(evt, e => {e.preventDefault(); registerViolation(evt);})
+        ); */
     </script>
+    <!-- ====== End Proteksi ====== -->
+
     <script src="{{ asset('js/darkmode.js') }}"></script>
     
     <!-- Custom Navbar Styles -->
