@@ -6,7 +6,9 @@
 
     <!-- CSRF Token -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
-
+    <noscript>
+        <meta http-equiv="refresh" content="0;url={{ route('nojs') }}">
+    </noscript>
     <title>{{ config('app.name', 'Laravel') }}</title>
     <link rel="stylesheet" href="{{ asset('css/style.css') }}">
     <!-- Favicon link -->
@@ -189,7 +191,6 @@
             </div>
         </footer>
     </div>
-    
     <script>
     document.addEventListener("DOMContentLoaded", function () {
         const body = document.body;

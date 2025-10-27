@@ -11,6 +11,7 @@ use App\Http\Controllers\MemberDashboardController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
+Route::view('/nojs', 'errors.nojs')->name('nojs');
 Route::get('/', function () {
     return redirect()->route('login');
 });
