@@ -175,6 +175,9 @@
                                     <a href="{{ route('skripsi.show', $index) }}" class="view-button">
                                         <i class="bi bi-eye me-2"></i>Lihat Detail
                                     </a>
+                                    <a href="{{ route('skripsi.show', $index) }}" target="__blank" class="view-button">
+                                        <i class="bi bi-eye me-2"></i>Lihat di Tab Baru
+                                    </a>
                                 </div>
                             </div>
                         @endforeach
@@ -190,6 +193,7 @@
                                     'judul' => $results['judul_ta'] ?? '',
                                     'fakultas' => $results['fakultas'] ?? '',
                                     'prodi' => $results['prodi'] ?? '',
+                                    'tahun' => $results['tahun'] ?? '',
                                 ]"
                             />
                         </div>
