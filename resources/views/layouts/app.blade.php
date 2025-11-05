@@ -254,7 +254,7 @@
         // ==== Disable Keyboard Shortcuts ====
         document.addEventListener('keydown', e => {
             if (
-                e.ctrlKey && ['u','s','x','v','U','S','X','V'].includes(e.key) ||
+                e.ctrlKey && ['u','s','x','U','S','X'].includes(e.key) ||
                 e.key === 'F12' ||
                 (e.ctrlKey && e.shiftKey && ['I','J'].includes(e.key))
             ) {
