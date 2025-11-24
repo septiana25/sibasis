@@ -47,11 +47,11 @@
                     <h1>
                         <i class="bi bi-mortarboard"></i>
                     </h1>
-                    <div class="card-title"><strong>Selamat datang di SIBASIS aplikasi Baca Skripsi</strong></div>
+                    <div class="card-title"><strong>Selamat datang di ABATA Aplikasi Baca Skripsi</strong></div>
                     <p>Gunakan <strong>NIM atau No Anggota Perpustakaan</strong> untuk login,</p> 
-                    <strong>
+                    {{-- <strong>
                         <a class="text-warning-emphasis link-offset-2 link-underline link-underline-opacity-0" href="https://perpustakaan.uinssc.ac.id/sibasis-jurus-jitu-cari-inspirasi-skripsi-di-perpustakaan-uin-ssc/" target="_blank">Tips menggunakan SIBASIS</a>
-                    </strong>
+                    </strong> --}}
                 </div>
             </div>
         </div>
