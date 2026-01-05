@@ -4,7 +4,7 @@
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h3>Upload Dokumen PDF</h3>
-        <a href="{{ route('admin.documents.index') }}" class="btn btn-light">Kembali</a>
+        <a href="{{ route('admin.documents.index') }}" class="btn btn-outline-primary">Kembali</a>
     </div>
 
     @if ($errors->any())

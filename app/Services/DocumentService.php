@@ -20,9 +20,81 @@ class DocumentService
     /**
      * Get paginated documents
      */
-    public function getPaginatedDocuments(int $perPage = 15)
+    public function getPaginatedDocuments(int $perPage = 15, array $filters = [])
     {
-        return Document::orderByDesc('created_at')->paginate($perPage);
+        $query = Document::query();
+
+        // Apply search filters
+        if (!empty($filters['search'])) {
+            $search = $filters['search'];
+            $query->where(function ($q) use ($search) {
+                $q->where('nim', 'like', "%{$search}%")
+                  ->orWhere('nama', 'like', "%{$search}%")
+                  ->orWhere('fakultas', 'like', "%{$search}%")
+                  ->orWhere('prodi', 'like', "%{$search}%");
+            });
+        }
+
+        // Apply status filter
+        if (!empty($filters['status'])) {
+            $query->where('status', $filters['status']);
+        }
+
+        // Apply year filter
+        if (!empty($filters['tahun'])) {
+            $query->where('tahun', $filters['tahun']);
+        }
+
+        // Apply fakultas filter
+        if (!empty($filters['fakultas'])) {
+            $query->where('fakultas', 'like', "%{$filters['fakultas']}%");
+        }
+
+        // Apply date range filter
+        if (!empty($filters['date_from'])) {
+            $query->whereDate('created_at', '>=', $filters['date_from']);
+        }
+
+        if (!empty($filters['date_to'])) {
+            $query->whereDate('created_at', '<=', $filters['date_to']);
+        }
+
+        return $query->orderByDesc('created_at')->paginate($perPage);
+    }
+
+    /**
+     * Get available years from documents
+     */
+    public function getAvailableYears(): array
+    {
+        return Document::distinct('tahun')
+            ->orderBy('tahun', 'desc')
+            ->pluck('tahun')
+            ->toArray();
+    }
+
+    /**
+     * Get available statuses
+     */
+    public function getAvailableStatuses(): array
+    {
+        return [
+            'pending' => 'Pending',
+            'approved' => 'Approved', 
+            'rejected' => 'Rejected',
+            'padding' => 'Padding'
+        ];
+    }
+
+    /**
+     * Get available fakultas from documents
+     */
+    public function getAvailableFakultas(): array
+    {
+        return Document::distinct('fakultas')
+            ->orderBy('fakultas')
+            ->pluck('fakultas')
+            ->toArray();
     }
 
     /**

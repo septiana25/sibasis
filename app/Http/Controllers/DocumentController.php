@@ -27,10 +27,39 @@ class DocumentController extends Controller
         // Optional: gate by role if available in future
     } */
 
-    public function index()
+    public function index(Request $request)
     {
-        $documents = $this->documentService->getPaginatedDocuments();
-        return view('documents.index', compact('documents'));
+        $filters = $this->buildFilters($request);
+        $perPage = $request->get('per_page', 15);
+        
+        $documents = $this->documentService->getPaginatedDocuments($perPage, $filters);
+        
+        // Get filter options for dropdowns
+        $filterOptions = [
+            'years' => $this->documentService->getAvailableYears(),
+            'statuses' => $this->documentService->getAvailableStatuses(),
+            'fakultas' => $this->documentService->getAvailableFakultas(),
+        ];
+        
+        // Preserve query parameters in pagination links
+        $documents->appends($request->query());
+        
+        return view('documents.index', compact('documents', 'filterOptions', 'filters'));
+    }
+
+    /**
+     * Build filters array from request parameters
+     */
+    protected function buildFilters(Request $request): array
+    {
+        return [
+            'search' => $request->get('search'),
+            'status' => $request->get('status'),
+            'tahun' => $request->get('tahun'),
+            'fakultas' => $request->get('fakultas'),
+            'date_from' => $request->get('date_from'),
+            'date_to' => $request->get('date_to'),
+        ];
     }
 
     public function create()
@@ -44,7 +73,7 @@ class DocumentController extends Controller
             $validated = $request->validate($this->documentService->getValidationRules());
             $this->documentService->createDocument($validated);
             
-            return redirect()->route('admin.documents.index')
+            return redirect()->route('admin.documents.create')
                 ->with('success', 'Dokumen berhasil diupload.');
                 
         } catch (\InvalidArgumentException $e) {

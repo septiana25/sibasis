@@ -77,8 +77,8 @@
                         @else
                             @auth('web')
                                 <li class="nav-item">
-                                    <a class="nav-link fw-semibold" href="">
-                                        <i class="bi bi-upload me-1"></i>Upload File
+                                    <a class="nav-link fw-semibold" href="{{ route('admin.documents.index') }}">
+                                        <i class="bi bi-upload me-1"></i>Data Dokumen
                                     </a>
                                 </li>
                             @endauth
