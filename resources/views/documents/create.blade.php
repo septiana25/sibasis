@@ -40,14 +40,14 @@
                         <input type="text" name="hp" id="hp" class="form-control" value="{{ old('no_hp') }}" readonly required>
                     </div>
 
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                         <label for="email" class="form-label">Email</label>
-                        <input type="text" name="email" id="email" class="form-control" value="{{ old('email') }}" readonly required>
+                        <input type="text" name="email" id="email" class="form-control" value="{{ old('email') }}" readonly>
                     </div>
 
-                    <div class="col-md-6">
-                        <label for="tempat_lahir" class="form-label">Tempat Lahir</label>
-                        <input type="text" name="tempat_lahir" id="tempat_lahir" class="form-control" value="{{ old('tempat_lahir') }}" readonly required>
+                    <div class="col-md-8">
+                        <label for="alamat" class="form-label">Alamat</label>
+                        <input type="text" name="alamat" id="alamat" class="form-control" value="{{ old('alamat') }}" readonly required>
                     </div>
                     
                     <div class="col-md-10">
@@ -74,8 +74,6 @@
                         <label for="file" class="form-label">File PDF (max 10MB)</label>
                         <input type="file" name="file" id="file" accept="application/pdf" class="form-control" required>
                     </div>
-                    <input type="hidden" name="prodi_kode" id="prodi_kode" value="{{ old('prodi_kode') }}">
-                    <input type="hidden" name="jenjang" id="jenjang" value="{{ old('jenjang') }}">
                 </div>
                 <div class="mt-3">
                     <button type="submit" class="btn btn-primary">Simpan</button>
@@ -92,14 +90,14 @@ const studentLookup = {
     elements: {
         btnCek: document.getElementById('btn-cek'),
         nim: document.getElementById('nim'),
-        nama: document.getElementById('nama'),
+        nama_lengkap: document.getElementById('nama'),
         fakultas: document.getElementById('fakultas'),
-        prodi: document.getElementById('prodi'),
-        prodi_kode: document.getElementById('prodi_kode'),
+        program_studi: document.getElementById('prodi'),
+        program_studi_kode: document.getElementById('prodi_kode'),
         jenjang: document.getElementById('jenjang'),
-        tempat_lahir: document.getElementById('tempat_lahir'),
+        alamat: document.getElementById('alamat'),
         email: document.getElementById('email'),
-        no_hp: document.getElementById('hp') // Fixed: should be 'hp' not 'no_hp'
+        nomor_handphone: document.getElementById('hp') // Fixed: should be 'hp' not 'no_hp'
     },
     
     // Configuration
@@ -109,7 +107,7 @@ const studentLookup = {
     },
 
     // Field names mapping for cleaner code
-    fieldNames: ['nama', 'fakultas', 'prodi', 'prodi_kode', 'jenjang', 'tempat_lahir', 'email', 'no_hp'],
+    fieldNames: ['nama_lengkap', 'fakultas', 'program_studi', 'program_studi_kode', 'alamat', 'email', 'nomor_handphone'],
 
     // Set loading state
     setLoadingState(isLoading) {
@@ -167,12 +165,14 @@ const studentLookup = {
                 body: JSON.stringify({ nim })
             });
 
+            
             if (response.ok) {
                 const data = await response.json();
-                this.updateFields(data);
-                
+                this.updateFields(data[0] || {}); // Assuming data is an array
+                console.log(data)
+                console.log(data.length)
                 // Check if data was actually found
-                if (!data.nama) {
+                if (!data || data.length === 0) {
                     this.showMessage('Data mahasiswa tidak ditemukan', true);
                 }
             } else {

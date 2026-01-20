@@ -19,6 +19,15 @@ class Document extends Model
         'status',
         'uploaded_by',
     ];
+
+    public function fakultas()
+    {
+        return $this->belongsTo(Fakultas::class, 'fakultas', 'nama_fakultas');
+    }
+    public function prodi()
+    {
+        return $this->belongsTo(Prodi::class, 'prodi', 'nama_prodi');
+    }
 }
 
 

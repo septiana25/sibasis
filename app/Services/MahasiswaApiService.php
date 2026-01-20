@@ -29,6 +29,15 @@ class MahasiswaApiService
     /**
      * Lookup student data by NIM
      */
+
+    public function getDataMahasiswaAPI(string $nim)
+    {
+        // $mahasiswa = Mahasiswa::where('nim', $req->nim)->pluck('nama', 'kodejurusan');
+        $api_url = rtrim($this->baseUrl, '/') . "/internal/sibaska/student?nim={$nim}"; 
+        $api_header = ['Authorization' => 'Bearer ' . $this->token];
+        $mahasiswa = json_decode(Http::withHeaders($api_header)->get($api_url))->data;
+        return $mahasiswa;
+    }
     public function lookupByNim(string $nim): array
     {
         if (!$this->isConfigured()) {

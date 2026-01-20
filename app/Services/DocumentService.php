@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Document;
+use App\Models\Prodi;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -10,13 +11,6 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class DocumentService
 {
-    protected FakultasService $fakultasService;
-
-    public function __construct(FakultasService $fakultasService)
-    {
-        $this->fakultasService = $fakultasService;
-    }
-
     /**
      * Get paginated documents
      */
@@ -29,9 +23,9 @@ class DocumentService
             $search = $filters['search'];
             $query->where(function ($q) use ($search) {
                 $q->where('nim', 'like', "%{$search}%")
-                  ->orWhere('nama', 'like', "%{$search}%")
-                  ->orWhere('fakultas', 'like', "%{$search}%")
-                  ->orWhere('prodi', 'like', "%{$search}%");
+                    ->orWhere('nama', 'like', "%{$search}%")
+                    ->orWhere('fakultas', 'like', "%{$search}%")
+                    ->orWhere('prodi', 'like', "%{$search}%");
             });
         }
 
@@ -80,7 +74,7 @@ class DocumentService
     {
         return [
             'pending' => 'Pending',
-            'approved' => 'Approved', 
+            'approved' => 'Approved',
             'rejected' => 'Rejected',
             'padding' => 'Padding'
         ];
@@ -103,29 +97,46 @@ class DocumentService
     public function createDocument(array $validatedData): Document
     {
         $nim = $validatedData['nim'];
+        $nama = $validatedData['nama'];
         $tahun = (int) $validatedData['tahun'];
-        $fakultas = $validatedData['fakultas'];
         $prodi = $validatedData['prodi'];
         $file = $validatedData['file'];
 
-        $matchFakultas = $this->fakultasService->getFakulByFakultas($fakultas);
-        
-        if (!$matchFakultas) {
-            throw new \InvalidArgumentException('Fakultas tidak ditemukan');
+        $matchProdi = $this->getProdiByName($prodi);
+        if (!$matchProdi) {
+            throw new \InvalidArgumentException('Program Studi tidak ditemukan');
         }
 
-        $filePath = $this->storeDocumentFile($file, $nim, $tahun, $matchFakultas['fakul'], $prodi);
-
+        $filePath = $this->storeDocumentFile($file, $nim, $tahun, $matchProdi['fakultas_kode'], $prodi);
+        
         return Document::create([
             'nim' => $nim,
-            'nama' => $validatedData['nama'],
-            'fakultas' => $fakultas,
-            'prodi' => $prodi,
+            'nama' => $nama,
+            'fakultas' => $matchProdi['id_fakultas'],
+            'prodi' => $matchProdi['id_prodi'],
             'tahun' => $tahun,
             'file_path' => $filePath,
             'status' => 'padding',
             'uploaded_by' => Auth::id(),
         ]);
+        
+        
+    }
+
+    function getProdiByName($prodi)
+    {
+        $normalizedProdi = strtolower(trim($prodi));
+        $data = Prodi::whereRaw('LOWER(nama_prodi) = ?', [$normalizedProdi])->with('fakultas')->first();
+        if ($data) {
+            return [
+                'id_prodi' => $data->id,
+                'nama_prodi' => $data->nama_prodi,
+                'prodi_kode' => $data->kode,
+                'id_fakultas' => $data->id_fakultas,
+                'fakultas' => $data->fakultas->ket_fakultas,
+                'fakultas_kode' => $data->fakultas->nama_fakultas,
+            ];
+        }
     }
 
     /**
@@ -142,7 +153,7 @@ class DocumentService
 
         // Store file
         Storage::disk($disk)->putFileAs($storagePath, $file, $filename);
-        
+
         return $storagePath . '/' . $filename;
     }
 
@@ -152,13 +163,13 @@ class DocumentService
     public function streamDocument(Document $document): StreamedResponse
     {
         $disk = 'public';
-        
+
         if (!Storage::disk($disk)->exists($document->file_path)) {
             throw new \Exception('File tidak ditemukan');
         }
 
         $stream = Storage::disk($disk)->readStream($document->file_path);
-        
+
         return new StreamedResponse(function () use ($stream) {
             fpassthru($stream);
         }, 200, [
@@ -180,13 +191,21 @@ class DocumentService
 
         $callback = function () {
             $handle = fopen('php://output', 'w');
-            
+
             // Write header row
             fputcsv($handle, [
-                'id', 'nim', 'nama', 'fakultas', 'prodi', 
-                'tahun', 'file_path', 'status', 'uploaded_by', 'created_at'
+                'id',
+                'nim',
+                'nama',
+                'fakultas',
+                'prodi',
+                'tahun',
+                'file_path',
+                'status',
+                'uploaded_by',
+                'created_at'
             ]);
-            
+
             // Write data rows in chunks for memory efficiency
             Document::orderBy('id')->chunk(500, function ($rows) use ($handle) {
                 foreach ($rows as $row) {
@@ -204,7 +223,7 @@ class DocumentService
                     ]);
                 }
             });
-            
+
             fclose($handle);
         };
 

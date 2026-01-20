@@ -10,16 +10,12 @@ use Illuminate\Support\Facades\Log;
 
 class DocumentController extends Controller
 {
-    protected DocumentService $documentService;
-    protected MahasiswaApiService $mahasiswaApiService;
+
 
     public function __construct(
-        DocumentService $documentService,
-        MahasiswaApiService $mahasiswaApiService
-    ) {
-        $this->documentService = $documentService;
-        $this->mahasiswaApiService = $mahasiswaApiService;
-    }
+        protected DocumentService $documentService,
+        protected MahasiswaApiService $mahasiswaApiService
+    ) {}
 
     /* public function __construct()
     {
@@ -31,19 +27,19 @@ class DocumentController extends Controller
     {
         $filters = $this->buildFilters($request);
         $perPage = $request->get('per_page', 15);
-        
+
         $documents = $this->documentService->getPaginatedDocuments($perPage, $filters);
-        
+
         // Get filter options for dropdowns
         $filterOptions = [
             'years' => $this->documentService->getAvailableYears(),
             'statuses' => $this->documentService->getAvailableStatuses(),
             'fakultas' => $this->documentService->getAvailableFakultas(),
         ];
-        
+
         // Preserve query parameters in pagination links
         $documents->appends($request->query());
-        
+
         return view('documents.index', compact('documents', 'filterOptions', 'filters'));
     }
 
@@ -72,20 +68,18 @@ class DocumentController extends Controller
         try {
             $validated = $request->validate($this->documentService->getValidationRules());
             $this->documentService->createDocument($validated);
-            
+
             return redirect()->route('admin.documents.create')
                 ->with('success', 'Dokumen berhasil diupload.');
-                
         } catch (\InvalidArgumentException $e) {
             return back()->withInput()
                 ->withErrors(['fakultas' => $e->getMessage()]);
-                
         } catch (\Exception $e) {
             Log::error('Document creation failed', [
                 'error' => $e->getMessage(),
                 'nim' => $request->input('nim')
             ]);
-            
+
             return back()->withInput()
                 ->withErrors(['error' => 'Gagal menyimpan dokumen. Silakan coba lagi.']);
         }
@@ -101,7 +95,7 @@ class DocumentController extends Controller
                 'file_path' => $document->file_path,
                 'error' => $e->getMessage()
             ]);
-            
+
             abort(404, 'Dokumen tidak ditemukan');
         }
     }
@@ -119,17 +113,14 @@ class DocumentController extends Controller
 
         try {
             $nim = $request->input('nim');
-            $studentData = $this->mahasiswaApiService->lookupByNim($nim);
-            
+            $studentData = $this->mahasiswaApiService->getDataMahasiswaAPI($nim);
+            //$studentData = $this->mahasiswaApiService->lookupByNim($nim);
+
             return response()->json($studentData);
-            
         } catch (\Exception $e) {
             return response()->json([
                 'message' => $e->getMessage()
             ], 404);
         }
     }
-
 }
-
-
