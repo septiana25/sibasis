@@ -150,6 +150,18 @@ class SkripsiController extends Controller
         }
 
         $url = $fileInfo['url_file'];
+        //result url https://opac.uinssc.ac.id/skbpp/public/storage/dokumen/2025/FS/Hukum%20Ekonomi%20Syariah%2FMuamalah/2108202090/2108202090_9_fulltext.pdf
+        // 3. Decode URL dan sanitasi path
+        $decodedUrl = $this->sanitizeAndDecodeUrl($url);
+        
+        if (!$decodedUrl) {
+            Log::error('Invalid or unsafe PDF URL', [
+                'original_url' => $url,
+                'index' => $index,
+            ]);
+            return response('URL file tidak valid atau tidak aman.', 400);
+        }
+        
         $rangeHeader = $request->header('Range');
 
         // 3. Siapkan opsi permintaan HTTP ke server remote
@@ -168,11 +180,11 @@ class SkripsiController extends Controller
 
         // 4. Ambil file PDF dari server remote
         try {
-            $resp = $this->httpClient->request('GET', $url, $options);
+            $resp = $this->httpClient->request('GET', $decodedUrl, $options);
         } catch (\Throwable $e) {
             // 5. Jika gagal, log dan kembalikan error 502
             Log::error('Guzzle error fetching PDF', [
-                'url' => $url,
+                'url' => $decodedUrl,
                 'index' => $index,
                 'exception' => $e->getMessage(),
             ]);
@@ -191,7 +203,7 @@ class SkripsiController extends Controller
             }
 
             Log::warning('Remote PDF returned error', [
-                'url' => $url,
+                'url' => $decodedUrl,
                 'status' => $status,
                 'body_preview' => $bodyPreview,
             ]);
@@ -202,7 +214,7 @@ class SkripsiController extends Controller
 
         // 7. Ambil header penting untuk response
         $contentType = $resp->getHeaderLine('Content-Type') ?: 'application/pdf';
-        $filename = basename(parse_url($url, PHP_URL_PATH) ?: 'file.pdf');
+        $filename = basename(parse_url($decodedUrl, PHP_URL_PATH) ?: 'file.pdf');
 
         $outHeaders = [
             'Content-Type' => $contentType,
@@ -228,6 +240,75 @@ class SkripsiController extends Controller
 
         // 9. Kembalikan response streaming ke pengguna
         return $streamed;
+    }
+
+    /**
+     * Sanitize and decode URL with security checks
+     */
+    protected function sanitizeAndDecodeUrl(string $url): ?string
+    {
+        // Parse URL untuk mendapatkan path
+        $parsedUrl = parse_url($url);
+        
+        if (!$parsedUrl) {
+            return null;
+        }
+
+        // Jika URL lengkap (dengan scheme), kembalikan setelah decode
+        if (isset($parsedUrl['scheme'])) {
+            // Decode hanya path portion untuk remote URLs
+            if (isset($parsedUrl['path'])) {
+                $decodedPath = urldecode($parsedUrl['path']);
+                
+                // Reconstruct URL dengan path yang sudah di-decode
+                $parsedUrl['path'] = $decodedPath;
+                return $this->unparseUrl($parsedUrl);
+            }
+            return $url;
+        }
+
+        // Untuk path lokal, decode dan sanitasi
+        $decodedPath = urldecode($url);
+        
+        // Hapus null bytes (security)
+        $decodedPath = str_replace("\0", '', $decodedPath);
+        
+        // Normalize path separators
+        $decodedPath = str_replace('\\', '/', $decodedPath);
+        
+        // Check untuk directory traversal attempts
+        if (
+            str_contains($decodedPath, '../') || 
+            str_contains($decodedPath, '..\\') ||
+            str_contains($decodedPath, '...') ||
+            preg_match('#\.\.[\\/]#', $decodedPath)
+        ) {
+            Log::warning('Directory traversal attempt detected', [
+                'path' => $decodedPath,
+                'original' => $url
+            ]);
+            return null;
+        }
+
+        return $decodedPath;
+    }
+
+    /**
+     * Reconstruct URL from parsed components
+     */
+    protected function unparseUrl(array $parsed): string
+    {
+        $scheme   = isset($parsed['scheme']) ? $parsed['scheme'] . '://' : '';
+        $host     = $parsed['host'] ?? '';
+        $port     = isset($parsed['port']) ? ':' . $parsed['port'] : '';
+        $user     = $parsed['user'] ?? '';
+        $pass     = isset($parsed['pass']) ? ':' . $parsed['pass']  : '';
+        $pass     = ($user || $pass) ? "$pass@" : '';
+        $path     = $parsed['path'] ?? '';
+        $query    = isset($parsed['query']) ? '?' . $parsed['query'] : '';
+        $fragment = isset($parsed['fragment']) ? '#' . $parsed['fragment'] : '';
+        
+        return "$scheme$user$pass$host$port$path$query$fragment";
     }
 
     public function toggleBookmark(Request $request, $index)
