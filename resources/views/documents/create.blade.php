@@ -36,8 +36,8 @@
                     </div>
 
                     <div class="col-md-4">
-                        <label for="hp" class="form-label">No Hp</label>
-                        <input type="text" name="hp" id="hp" class="form-control" value="{{ old('no_hp') }}" readonly required>
+                        <label for="no_hp" class="form-label">No Hp</label>
+                        <input type="text" name="no_hp" id="no_hp" class="form-control" value="{{ old('no_hp') }}" readonly>
                     </div>
 
                     <div class="col-md-4">
@@ -47,17 +47,17 @@
 
                     <div class="col-md-8">
                         <label for="alamat" class="form-label">Alamat</label>
-                        <input type="text" name="alamat" id="alamat" class="form-control" value="{{ old('alamat') }}" readonly required>
+                        <input type="text" name="alamat" id="alamat" class="form-control" value="{{ old('alamat') }}" readonly>
                     </div>
                     
                     <div class="col-md-10">
-                        <label for="judul" class="form-label">Judul Skripsi</label>
-                        <textarea name="judul" id="judul" cols="30" rows="3" class="form-control" required>{{ old('judul') }}</textarea>
+                        <label for="judul" class="form-label">Judul Skripsi <span class="text-danger">*</span></label>
+                        <textarea name="judul" id="judul" cols="30" rows="1" class="form-control" required>{{ old('judul') }}</textarea>
                         
                     </div>
                     <div class="col-md-2">
-                        <label for="tahun" class="form-label">Tahun Skripsi</label>
-                        <input type="number" name="tahun" id="tahun" class="form-control" value="{{ old('tahun') }}" required>
+                        <label for="tahun" class="form-label">Tahun Skripsi <span class="text-danger">*</span></label>
+                        <input type="text" name="tahun" id="tahun" class="form-control" value="{{ old('tahun') }}" required autocomplete="on">
                     </div>
 
                     <div class="col-md-6">
@@ -71,12 +71,12 @@
                     </div>
 
                     <div class="col-12">
-                        <label for="file" class="form-label">File PDF (max 10MB)</label>
+                        <label for="file" class="form-label">File PDF (max 10MB) <span class="text-danger">*</span></label>
                         <input type="file" name="file" id="file" accept="application/pdf" class="form-control" required>
                     </div>
                 </div>
                 <div class="mt-3">
-                    <button type="submit" class="btn btn-primary">Simpan</button>
+                    <button type="submit" class="btn btn-primary" id="btn-submit">Simpan</button>
                 </div>
             </form>
         </div>
@@ -89,15 +89,15 @@ const studentLookup = {
     // Cache DOM elements for better performance
     elements: {
         btnCek: document.getElementById('btn-cek'),
+        btnSubmit: document.getElementById('btn-submit'),
         nim: document.getElementById('nim'),
         nama_lengkap: document.getElementById('nama'),
         fakultas: document.getElementById('fakultas'),
         program_studi: document.getElementById('prodi'),
         program_studi_kode: document.getElementById('prodi_kode'),
-        jenjang: document.getElementById('jenjang'),
         alamat: document.getElementById('alamat'),
         email: document.getElementById('email'),
-        nomor_handphone: document.getElementById('hp') // Fixed: should be 'hp' not 'no_hp'
+        nomor_handphone: document.getElementById('no_hp') // Fixed: should be 'no_hp' not 'hp'
     },
     
     // Configuration
@@ -112,7 +112,9 @@ const studentLookup = {
     // Set loading state
     setLoadingState(isLoading) {
         this.elements.btnCek.disabled = isLoading;
+        this.elements.btnSubmit.disabled = isLoading;
         this.elements.btnCek.textContent = isLoading ? 'Mengecek...' : 'Cek';
+        this.elements.btnSubmit.textContent = isLoading ? 'Menyimpan...' : 'Simpan';
         this.elements.nim.disabled = isLoading;
     },
 
@@ -133,7 +135,6 @@ const studentLookup = {
             alert(`Error: ${message}`);
         } else {
             // Success message could be shown here if needed
-            console.log(message);
         }
     },
 
@@ -169,8 +170,7 @@ const studentLookup = {
             if (response.ok) {
                 const data = await response.json();
                 this.updateFields(data[0] || {}); // Assuming data is an array
-                console.log(data)
-                console.log(data.length)
+
                 // Check if data was actually found
                 if (!data || data.length === 0) {
                     this.showMessage('Data mahasiswa tidak ditemukan', true);
@@ -185,7 +185,6 @@ const studentLookup = {
             // Handle network errors
             this.updateFields(); // Clear fields
             this.showMessage(`Network error: ${error.message}`, true);
-            console.error('Lookup error:', error);
         } finally {
             this.setLoadingState(false);
         }

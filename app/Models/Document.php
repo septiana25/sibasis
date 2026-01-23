@@ -12,21 +12,25 @@ class Document extends Model
     protected $fillable = [
         'nim',
         'nama',
+        'judul',
         'fakultas',
         'prodi',
         'tahun',
+        'email',
+        'no_hp',
+        'alamat',
         'file_path',
         'status',
         'uploaded_by',
     ];
 
-    public function fakultas()
+    public function fakultasRelation()
     {
-        return $this->belongsTo(Fakultas::class, 'fakultas', 'nama_fakultas');
+        return $this->belongsTo(Fakultas::class, 'fakultas');
     }
-    public function prodi()
+    public function prodiRelation()
     {
-        return $this->belongsTo(Prodi::class, 'prodi', 'nama_prodi');
+        return $this->belongsTo(Prodi::class, 'prodi');
     }
 }
 

@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Document;
+use App\Models\Fakultas;
 use App\Models\Prodi;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -16,7 +17,7 @@ class DocumentService
      */
     public function getPaginatedDocuments(int $perPage = 15, array $filters = [])
     {
-        $query = Document::query();
+        $query = Document::query()->with(['fakultasRelation', 'prodiRelation']);
 
         // Apply search filters
         if (!empty($filters['search'])) {
@@ -25,7 +26,8 @@ class DocumentService
                 $q->where('nim', 'like', "%{$search}%")
                     ->orWhere('nama', 'like', "%{$search}%")
                     ->orWhere('fakultas', 'like', "%{$search}%")
-                    ->orWhere('prodi', 'like', "%{$search}%");
+                    ->orWhere('prodi', 'like', "%{$search}%")
+                    ->orWhere('judul', 'like', "%{$search}%");
             });
         }
 
@@ -53,7 +55,7 @@ class DocumentService
             $query->whereDate('created_at', '<=', $filters['date_to']);
         }
 
-        return $query->orderByDesc('created_at')->paginate($perPage);
+        return $data = $query->orderByDesc('created_at')->paginate($perPage);
     }
 
     /**
@@ -85,9 +87,11 @@ class DocumentService
      */
     public function getAvailableFakultas(): array
     {
-        return Document::distinct('fakultas')
-            ->orderBy('fakultas')
-            ->pluck('fakultas')
+        $fakultasIds = Document::distinct('fakultas')->pluck('fakultas');
+        
+        return Fakultas::whereIn('id', $fakultasIds)
+            ->orderBy('ket_fakultas')
+            ->get(['id', 'nama_fakultas', 'ket_fakultas'])
             ->toArray();
     }
 
@@ -98,9 +102,14 @@ class DocumentService
     {
         $nim = $validatedData['nim'];
         $nama = $validatedData['nama'];
+        $judul = $validatedData['judul'];
         $tahun = (int) $validatedData['tahun'];
         $prodi = $validatedData['prodi'];
+        $email = $validatedData['email'] ?? null;
+        $no_hp = $validatedData['no_hp'] ?? null;
+        $alamat = $validatedData['alamat'] ?? null;
         $file = $validatedData['file'];
+        // dd($validatedData);
 
         $matchProdi = $this->getProdiByName($prodi);
         if (!$matchProdi) {
@@ -112,9 +121,13 @@ class DocumentService
         return Document::create([
             'nim' => $nim,
             'nama' => $nama,
+            'judul' => $judul,
             'fakultas' => $matchProdi['id_fakultas'],
             'prodi' => $matchProdi['id_prodi'],
             'tahun' => $tahun,
+            'email' => $email,
+            'no_hp' => $no_hp,
+            'alamat' => $alamat,
             'file_path' => $filePath,
             'status' => 'padding',
             'uploaded_by' => Auth::id(),
@@ -237,10 +250,14 @@ class DocumentService
     {
         return [
             'nim' => 'required|string|unique:documents,nim',
+            'judul' => 'required|string',
             'tahun' => 'required|numeric',
             'nama' => 'required|string',
             'fakultas' => 'required|string',
             'prodi' => 'required|string',
+            'email' => 'nullable|email',
+            'no_hp' => 'nullable|string',
+            'alamat' => 'nullable|string',
             'file' => 'required|file|mimes:pdf|max:10240',
         ];
     }

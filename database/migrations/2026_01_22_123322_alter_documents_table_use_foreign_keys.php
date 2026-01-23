@@ -12,11 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('documents', function (Blueprint $table) {
-            $table->dropColumn('fakultas', 'prodi');
-
             $table->foreignId('fakultas')
                 ->nullable()
-                ->after('nama')
+                ->after('judul')
                 ->constrained('fakultas')
                 ->nullOnDelete();
             $table->foreignId('prodi')
@@ -33,12 +31,11 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('documents', function (Blueprint $table) {
-            $table->string('fakultas')->after('nama');
-            $table->string('prodi')->after('fakultas');
-
             $table->dropForeign(['fakultas']);
             $table->dropForeign(['prodi']);
-            $table->dropColumn(['fakultas', 'prodi']);
+
+            $table->dropColumn('fakultas');
+            $table->dropColumn('prodi');
         });
     }
 };
