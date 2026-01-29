@@ -65,8 +65,8 @@ class DocumentController extends Controller
 
     public function store(Request $request)
     {
+        $validated = $request->validate($this->documentService->getValidationRules());
         try {
-            $validated = $request->validate($this->documentService->getValidationRules());
             $this->documentService->createDocument($validated);
 
             return redirect()->route('admin.documents.create')

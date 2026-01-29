@@ -28,11 +28,7 @@
                             <div class="input-group">
                                 <input type="text" name="nim" id="nim" class="form-control"
                                     value="{{ old('nim') }}" required>
-                                <button class="btn btn-outline-secondary" type="button" id="btn-cek"
-                                    style="display: none;">
-                                    <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
-                                    <span role="status">Mengecek...</span>
-                                </button>
+                                <button class="btn btn-outline-secondary" type="button" id="btn-cek">Cek</button>
                             </div>
                         </div>
 
@@ -83,6 +79,8 @@
                             <label for="prodi" class="form-label">Prodi</label>
                             <input type="text" name="prodi" id="prodi" class="form-control"
                                 value="{{ old('prodi') }}" readonly required>
+                            <input type="hidden" name="prodi_kode" id="prodi_kode"
+                                value="{{ old('prodi_kode') }}">
                         </div>
 
                         <div class="col-12">
@@ -104,6 +102,12 @@
 
     <script>
         // Cache DOM elements and configuration
+
+        const spinnerHTML = (message) => `
+            <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+            <span role="status">${message}</span>
+        `;
+        
         const studentLookup = {
             // Cache DOM elements for better performance
             elements: {
@@ -133,10 +137,12 @@
             // Set loading state
             setLoadingState(isLoading) {
                 this.elements.btnCek.disabled = isLoading;
-                this.elements.btnCek.style.display = isLoading ? 'inline-block' : 'none';
+                this.elements.btnCek.innerHTML = isLoading ?
+                    spinnerHTML('Mengecek...') :
+                    'Cek';
                 this.elements.btnSubmit.disabled = isLoading;
                 this.elements.btnSubmit.innerHTML = isLoading ?
-                    '<span class="spinner-border spinner-border-sm" aria-hidden="true"></span><span role="status">Menyimpan...</span>' :
+                    spinnerHTML('Mengecek...') :
                     'Simpan';
                 this.elements.nim.disabled = isLoading;
             },
@@ -241,13 +247,6 @@
             }
         };
 
-        /* const submitButton = document.getElementById('btn-submit');
-        submitButton.addEventListener('click', function() {
-            this.disabled = true;
-            this.innerHTML = '<span class="spinner-border spinner-border-sm" aria-hidden="true"></span><span role="status">Menyimpan...</span>';
-            this.form.submit();
-        }); */
-
         // Initialize when DOM is ready
         document.addEventListener('DOMContentLoaded', () => {
             studentLookup.init();
@@ -257,7 +256,7 @@
 
             form.addEventListener('submit', function() {
                 submitButton.disabled = true;
-                submitButton.innerHTML = '<span class="spinner-border spinner-border-sm" aria-hidden="true"></span><span role="status">Menyimpan...</span>';
+                submitButton.innerHTML = spinnerHTML('Menyimpan...');
             });
         });
     </script>

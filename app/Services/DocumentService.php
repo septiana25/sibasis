@@ -101,22 +101,23 @@ class DocumentService
     public function createDocument(array $validatedData): Document
     {
         $nim = $validatedData['nim'];
-        $nama = $validatedData['nama'];
-        $judul = $validatedData['judul'];
+        $nama = strtoupper($validatedData['nama']);
+        $judul = strtoupper($validatedData['judul']);
         $tahun = (int) $validatedData['tahun'];
         $prodi = $validatedData['prodi'];
+        $prodi_kode = $validatedData['prodi_kode'];
         $email = $validatedData['email'] ?? null;
         $no_hp = $validatedData['no_hp'] ?? null;
         $alamat = $validatedData['alamat'] ?? null;
         $file = $validatedData['file'];
         // dd($validatedData);
 
-        $matchProdi = $this->getProdiByName($prodi);
+        $matchProdi = $this->getProdiByKode($prodi_kode);
         if (!$matchProdi) {
             throw new \InvalidArgumentException('Program Studi tidak ditemukan');
         }
 
-        $filePath = $this->storeDocumentFile($file, $nim, $tahun, $matchProdi['fakultas_kode'], $prodi);
+        $filePath = $this->storeDocumentFile($file, $nim, $tahun, $matchProdi['fakultas_kode'], $matchProdi['nama_prodi']);
         
         return Document::create([
             'nim' => $nim,
@@ -129,17 +130,17 @@ class DocumentService
             'no_hp' => $no_hp,
             'alamat' => $alamat,
             'file_path' => $filePath,
-            'status' => 'padding',
+            'status' => 'pending',
             'uploaded_by' => Auth::id(),
         ]);
-        
-        
     }
 
-    function getProdiByName($prodi)
+    function getProdiByKode($prodiKode)
     {
-        $normalizedProdi = strtolower(trim($prodi));
-        $data = Prodi::whereRaw('LOWER(nama_prodi) = ?', [$normalizedProdi])->with('fakultas')->first();
+        
+        $data = Prodi::with('fakultas')
+            ->where('kode', $prodiKode)
+            ->first();
         if ($data) {
             return [
                 'id_prodi' => $data->id,
@@ -250,11 +251,12 @@ class DocumentService
     {
         return [
             'nim' => 'required|string|unique:documents,nim',
-            'judul' => 'required|string',
+            'judul' => 'required|string|unique:documents,judul',
             'tahun' => 'required|numeric',
             'nama' => 'required|string',
             'fakultas' => 'required|string',
             'prodi' => 'required|string',
+            'prodi_kode' => 'required|string',
             'email' => 'nullable|email',
             'no_hp' => 'nullable|string',
             'alamat' => 'nullable|string',
