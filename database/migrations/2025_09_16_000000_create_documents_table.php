@@ -15,8 +15,6 @@ return new class extends Migration
             $table->id();
             $table->string('nim')->unique();
             $table->string('nama');
-            $table->string('fakultas');
-            $table->string('prodi');
             $table->integer('tahun');
             $table->string('file_path');
             $table->string('status')->default('padding');

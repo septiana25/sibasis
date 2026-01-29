@@ -224,7 +224,7 @@
                             Halaman {{ $documents->currentPage() }} dari {{ $documents->lastPage() }}
                         </div>
                         <div>
-                            {{ $documents->onEachSide(2)->links() }}
+                            {{ $documents->onEachSide(2)->links('pagination.bootstrap-5') }}
                         </div>
                     </div>
                 </div>
@@ -309,4 +309,50 @@
             }
         });
     </script>
+
+    <!-- Custom Pagination Styles -->
+    <style>
+        .pagination .page-link {
+            padding: 0.375rem 0.75rem;
+            font-size: 0.875rem;
+            border-radius: 0.25rem;
+            border-color: #dee2e6;
+            color: #6c757d;
+        }
+        
+        .pagination .page-item:not(:first-child) .page-link {
+            margin-left: 0;
+        }
+        
+        .pagination .page-link:hover {
+            background-color: #e9ecef;
+            border-color: #adb5bd;
+            color: #0d6efd;
+        }
+        
+        .pagination .page-item.active .page-link {
+            background-color: #0d6efd;
+            border-color: #0d6efd;
+            color: #fff;
+        }
+        
+        .pagination .page-item.disabled .page-link {
+            background-color: #fff;
+            border-color: #dee2e6;
+            color: #6c757d;
+            pointer-events: none;
+        }
+        
+        .pagination .page-link i {
+            font-size: 0.75rem;
+        }
+        
+        /* Responsive pagination */
+        @media (max-width: 576px) {
+            .pagination .page-link {
+                padding: 0.25rem 0.5rem;
+                font-size: 0.75rem;
+            }
+        }
+    </style>
 @endsection

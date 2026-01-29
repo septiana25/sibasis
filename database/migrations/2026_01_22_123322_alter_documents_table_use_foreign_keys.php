@@ -36,6 +36,8 @@ return new class extends Migration
 
             $table->dropColumn('fakultas');
             $table->dropColumn('prodi');
+
+
         });
     }
 };
