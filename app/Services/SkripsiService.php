@@ -134,6 +134,21 @@ class SkripsiService{
             return null;
         }
 
+        // Check if a record already exists for the same member_id and nim today
+        $existingRecord = SearchStatistic::where('member_id', $statistik['member_id'])
+            ->where('nim', $statistik['nim'])
+            ->whereDate('created_at', now()->toDateString())
+            ->first();
+
+        if ($existingRecord) {
+            Log::info('Search statistic already recorded for this member and NIM today', [
+                'member_id' => $statistik['member_id'],
+                'nim' => $statistik['nim'],
+                'date' => now()->toDateString()
+            ]);
+            return null;
+        }
+
         SearchStatistic::create([
             'member_id' => $statistik['member_id'],
             'member_name' => $statistik['member_name'], 
