@@ -11,6 +11,8 @@ use Illuminate\Support\Facades\Validator;
 
 class SkripsiService{
 
+    public function __construct(protected SkripsiApiService $skripsiApiService) {}
+
     public function getDropdown(): array {
         /* data get database pakai ini
         $defaultFakultas = Fakultas::select('id', 'nama')->get()->toArray();
@@ -34,45 +36,7 @@ class SkripsiService{
 
     public function searchSkripsiFromApi(array $queryParams)
     {
-        $client = new Client();
-        $url = env('API_URL');
-        //dd($queryParams);
-        try {
-            $response = $client->get($url, [
-                'query' => $queryParams
-            ]);
-
-            
-            // ✅ Cek status code
-            if ($response->getStatusCode() !== 200) {
-                Log::warning("API returned non-200 status: " . $response->getStatusCode());
-                return null;
-            }
-            
-            // ✅ Ambil body dan decode
-            $body = (string) $response->getBody();
-            $data = json_decode($body, true);
-
-    
-            // ✅ Validasi apakah isi data sesuai
-            if (
-                !is_array($data) ||                          // respon bukan array
-                !array_key_exists('data', $data) ||          // tidak punya key 'data'
-                !is_array($data['data']) ||                  // key 'data' bukan array
-                empty($data['data'])                         // array 'data' tapi kosong
-            ) {
-                Log::warning("API returned empty or invalid JSON structure.");
-                Log::info("API returned empty data section.", ['queryParams' => $queryParams, 'rawResponse' => $data]);
-                return null;
-            }
-    
-            return $data;
-    
-        } catch (\Exception $e) {
-            // ✅ Tangani error seperti timeout, 404, koneksi gagal
-            Log::error("API error: " . $e->getMessage());
-            return null;
-        }
+        return $this->skripsiApiService->getSkripsiFromApi($queryParams);
     }
 
     public function getDocumentFromSession($index, array $dataSession): array
@@ -130,7 +94,7 @@ class SkripsiService{
         
 
         if ($validator->fails()) {
-            Log::error($validator);
+            Log::error($validator->errors());
             return null;
         }
 
@@ -141,11 +105,6 @@ class SkripsiService{
             ->first();
 
         if ($existingRecord) {
-            Log::info('Search statistic already recorded for this member and NIM today', [
-                'member_id' => $statistik['member_id'],
-                'nim' => $statistik['nim'],
-                'date' => now()->toDateString()
-            ]);
             return null;
         }
 
@@ -158,7 +117,6 @@ class SkripsiService{
             'judul_ta' => $statistik['judul_ta'],
             'program_studi' => $statistik['program_studi'],
             'fakultas' => $statistik['fakultas']
-            
         ]);
     }
 
