@@ -13,8 +13,7 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 class DocumentService
 {
 
-    public function __construct(protected SkripsiApiService $skripsiApiService)
-    {}
+    public function __construct(protected SkripsiApiService $skripsiApiService) {}
     /**
      * Get paginated documents
      */
@@ -91,7 +90,7 @@ class DocumentService
     public function getAvailableFakultas(): array
     {
         $fakultasIds = Document::distinct('fakultas')->pluck('fakultas');
-        
+
         return Fakultas::whereIn('id', $fakultasIds)
             ->orderBy('ket_fakultas')
             ->get(['id', 'nama_fakultas', 'ket_fakultas'])
@@ -125,7 +124,7 @@ class DocumentService
         }
 
         $filePath = $this->storeDocumentFile($file, $nim, $tahun, $matchProdi['fakultas_kode'], $matchProdi['nama_prodi']);
-        
+
         return Document::create([
             'nim' => $nim,
             'nama' => $nama,
@@ -144,7 +143,7 @@ class DocumentService
 
     function getProdiByKode($prodiKode)
     {
-        
+
         $data = Prodi::with('fakultas')
             ->where('kode', $prodiKode)
             ->first();
@@ -258,7 +257,7 @@ class DocumentService
     {
         $judul = strtoupper($validatedData['judul']);
         $tahun = (int) $validatedData['tahun'];
-        
+
         $updateData = [
             'judul' => $judul,
             'tahun' => $tahun,
@@ -267,30 +266,30 @@ class DocumentService
         // Handle file update if provided
         if (isset($validatedData['file'])) {
             $file = $validatedData['file'];
-            
+
             // Get existing document details for file path structure
             $fakultas = $document->fakultasRelation;
             $prodi = $document->prodiRelation;
-            
+
             // Delete old file if it exists
             if (Storage::disk('public')->exists($document->file_path)) {
                 Storage::disk('public')->delete($document->file_path);
             }
-            
+
             // Store new file
             $filePath = $this->storeDocumentFile(
-                $file, 
-                $document->nim, 
-                $tahun, 
-                $fakultas->nama_fakultas, 
+                $file,
+                $document->nim,
+                $tahun,
+                $fakultas->nama_fakultas,
                 $prodi->nama_prodi
             );
-            
+
             $updateData['file_path'] = $filePath;
         }
 
         $document->update($updateData);
-        
+
         return $document->fresh();
     }
 

@@ -17,7 +17,7 @@ Route::get('/', function () {
     return redirect()->route('login');
 });
 
-Route::middleware('logout.others:member')->group(function() {
+Route::middleware('logout.others:member')->group(function () {
     Route::get('/login', [MemberAuthController::class, 'showLoginForm'])->name('login');
     Route::post('/login', [MemberAuthController::class, 'login'])->name('member.login');
 });
@@ -26,7 +26,7 @@ Route::middleware('logout.others:member')->group(function() {
 
 /* Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home'); */
 
-Route::middleware('auth:member')->group(function() {
+Route::middleware('auth:member')->group(function () {
     Route::get('/skripsi', [SkripsiController::class, 'index'])->name('skripsi.index');
     Route::get('/skripsi/{id}', [SkripsiController::class, 'show'])->name('skripsi.show');
     Route::post('/skripsi/search', [SkripsiController::class, 'search'])->name('skripsi.search');
@@ -35,8 +35,8 @@ Route::middleware('auth:member')->group(function() {
 
     Route::get('/member/dashboard', [MemberDashboardController::class, 'index'])->name('member.dashboard');
 
-    Route::post('violation-log',[ViolationController::class, 'log'])->name('violation-log');
-    Route::get('violation-logout',[ViolationController::class, 'logout'])->name('violation-logout');
+    Route::post('violation-log', [ViolationController::class, 'log'])->name('violation-log');
+    Route::get('violation-logout', [ViolationController::class, 'logout'])->name('violation-logout');
 
     Route::post('/logout', [MemberAuthController::class, 'logout'])->name('logout');
 });
@@ -45,15 +45,15 @@ Route::get('/password/confirm', [ConfirmPasswordController::class, 'showConfirmF
 Route::post('/password/confirm', [ConfirmPasswordController::class, 'confirm']);
 
 Route::prefix('admin')->name('admin.')->group(function () {
-    Route::middleware('logout.others:web')->group(function() {
+    Route::middleware('logout.others:web')->group(function () {
         Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
         Route::post('/login', [LoginController::class, 'login'])->name('login');
     });
-    
+
     Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->name('register');
     Route::post('/register', [RegisterController::class, 'register'])->name('register');
-    
-    Route::middleware('auth:web')->group(function() {
+
+    Route::middleware('auth:web')->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
         Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 

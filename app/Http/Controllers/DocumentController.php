@@ -118,7 +118,6 @@ class DocumentController extends Controller
     public function update(Request $request, Document $document)
     {
         $validated = $request->validate($this->documentService->getUpdateValidationRules($document));
-        
         try {
             $updatedDocument = $this->documentService->updateDocument($document, $validated);
 

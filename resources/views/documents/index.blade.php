@@ -240,7 +240,8 @@
     </div>
 
     <!-- Edit Document Modal -->
-    <div class="modal fade" id="editDocumentModal" tabindex="-1" aria-labelledby="editDocumentModalLabel" aria-hidden="true">
+    <div class="modal fade" id="editDocumentModal" tabindex="-1" aria-labelledby="editDocumentModalLabel"
+        aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
@@ -252,29 +253,29 @@
                     @method('PUT')
                     <div class="modal-body">
                         <input type="hidden" id="edit_document_id" name="document_id">
-                        
+
                         <!-- Judul -->
                         <div class="mb-3">
-                            <label for="edit_judul" class="form-label">Judul Skripsi <span class="text-danger">*</span></label>
-                            <textarea class="form-control" id="edit_judul" name="judul" rows="2" required 
+                            <label for="edit_judul" class="form-label">Judul Skripsi <span
+                                    class="text-danger">*</span></label>
+                            <textarea class="form-control" id="edit_judul" name="judul" rows="2" required
                                 placeholder="Masukkan judul skripsi..."></textarea>
                             <div class="invalid-feedback"></div>
                         </div>
 
                         <!-- Tahun -->
-                            <input type="hidden" class="form-control" id="edit_tahun" name="tahun" 
-                                placeholder="Masukkan tahun..." required min="1900" max="{{ date('Y') + 1 }}">
+                        <input type="hidden" class="form-control" id="edit_tahun" name="tahun"
+                            placeholder="Masukkan tahun..." required min="1900" max="{{ date('Y') + 1 }}">
 
                         <!-- File PDF -->
                         <div class="mb-3">
                             <label for="edit_file" class="form-label">File PDF (Opsional)</label>
-                            <input type="file" class="form-control" id="edit_file" name="file" 
-                                accept=".pdf">
+                            <input type="file" class="form-control" id="edit_file" name="file" accept=".pdf">
                             <div class="form-text">
                                 Kosongkan jika tidak ingin mengubah file. File harus berformat PDF, maksimal 10MB.
                             </div>
                             <div class="invalid-feedback"></div>
-                            
+
                             <!-- Current file info -->
                             <div id="current_file_info" class="mt-2" style="display: none;">
                                 <small class="text-muted">
@@ -286,7 +287,8 @@
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
                         <button type="submit" class="btn btn-primary">
-                            <span class="spinner-border spinner-border-sm me-2" id="edit_loading" style="display: none;"></span>
+                            <span class="spinner-border spinner-border-sm me-2" id="edit_loading"
+                                style="display: none;"></span>
                             Update
                         </button>
                     </div>
@@ -370,14 +372,14 @@
                     document.getElementById('edit_document_id').value = data.id;
                     document.getElementById('edit_judul').value = data.judul;
                     document.getElementById('edit_tahun').value = data.tahun;
-                    
+
                     // Show current file info
                     document.getElementById('current_file_name').textContent = data.file_path.split('/').pop();
                     document.getElementById('current_file_info').style.display = 'block';
-                    
+
                     // Clear any previous validation errors
                     clearValidationErrors();
-                    
+
                     // Show modal using data attribute trigger
                     const modalTrigger = document.querySelector(`[data-edit-id="${id}"]`);
                     if (modalTrigger) {
@@ -393,58 +395,58 @@
         // Handle edit form submission
         document.getElementById('editDocumentForm').addEventListener('submit', function(e) {
             e.preventDefault();
-            
+
             const formData = new FormData(this);
             const documentId = document.getElementById('edit_document_id').value;
             const loadingSpinner = document.getElementById('edit_loading');
             const submitButton = this.querySelector('button[type="submit"]');
-            
+
             // Show loading state
             loadingSpinner.style.display = 'inline-block';
             submitButton.disabled = true;
-            
+
             // Clear previous validation errors
             clearValidationErrors();
-            
+
             fetch(`/admin/documents/${documentId}`, {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Update table row with new data
-                    updateTableRow(data.document);
-                    
-                    // Close modal using data attribute
-                    const closeButton = document.querySelector('#editDocumentModal .btn-close');
-                    if (closeButton) {
-                        closeButton.click();
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
                     }
-                    
-                    // Show success message
-                    showAlert('success', data.message);
-                } else {
-                    // Show validation errors
-                    if (data.errors) {
-                        showValidationErrors(data.errors);
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Update table row with new data
+                        updateTableRow(data.document);
+
+                        // Close modal using data attribute
+                        const closeButton = document.querySelector('#editDocumentModal .btn-close');
+                        if (closeButton) {
+                            closeButton.click();
+                        }
+
+                        // Show success message
+                        showAlert('success', data.message);
                     } else {
-                        showAlert('danger', data.message || 'Terjadi kesalahan');
+                        // Show validation errors
+                        if (data.errors) {
+                            showValidationErrors(data.errors);
+                        } else {
+                            showAlert('danger', data.message || 'Terjadi kesalahan');
+                        }
                     }
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                showAlert('danger', 'Terjadi kesalahan jaringan');
-            })
-            .finally(() => {
-                // Hide loading state
-                loadingSpinner.style.display = 'none';
-                submitButton.disabled = false;
-            });
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showAlert('danger', 'Terjadi kesalahan jaringan');
+                })
+                .finally(() => {
+                    // Hide loading state
+                    loadingSpinner.style.display = 'none';
+                    submitButton.disabled = false;
+                });
         });
 
         // Helper functions
@@ -457,7 +459,7 @@
             Object.keys(errors).forEach(field => {
                 const input = document.getElementById(`edit_${field}`);
                 const feedback = input.nextElementSibling;
-                
+
                 if (input) {
                     input.classList.add('is-invalid');
                     if (feedback && feedback.classList.contains('invalid-feedback')) {
@@ -474,7 +476,7 @@
                 // Update judul cell
                 const judulCell = row.children[3];
                 judulCell.querySelector('small').textContent = documentData.judul;
-                
+
                 // Update tahun cell
                 const tahunCell = row.children[6];
                 tahunCell.querySelector('.badge').textContent = documentData.tahun;
@@ -488,7 +490,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
             `;
-            
+
             const container = document.querySelector('.container');
             const firstChild = container.firstElementChild;
             const alertDiv = document.createElement('div');
@@ -518,34 +520,34 @@
             border-color: #dee2e6;
             color: #6c757d;
         }
-        
+
         .pagination .page-item:not(:first-child) .page-link {
             margin-left: 0;
         }
-        
+
         .pagination .page-link:hover {
             background-color: #e9ecef;
             border-color: #adb5bd;
             color: #0d6efd;
         }
-        
+
         .pagination .page-item.active .page-link {
             background-color: #0d6efd;
             border-color: #0d6efd;
             color: #fff;
         }
-        
+
         .pagination .page-item.disabled .page-link {
             background-color: #fff;
             border-color: #dee2e6;
             color: #6c757d;
             pointer-events: none;
         }
-        
+
         .pagination .page-link i {
             font-size: 0.75rem;
         }
-        
+
         /* Responsive pagination */
         @media (max-width: 576px) {
             .pagination .page-link {
