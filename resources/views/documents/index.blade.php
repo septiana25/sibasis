@@ -128,7 +128,7 @@
                                 <th>Prodi</th>
                                 <th>Tahun</th>
                                 <th>Status</th>
-                                <th width="120">Aksi</th>
+                                <th width="150">Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -178,6 +178,13 @@
                                                 class="btn btn-outline-primary" title="Lihat PDF">
                                                 <i class="bi bi-eye"></i>
                                             </a>
+                                            <button type="button" class="btn btn-outline-warning"
+                                                onclick="editDocument({{ $doc->id }})" title="Edit">
+                                                <i class="bi bi-pencil"></i>
+                                            </button>
+                                            <!-- Hidden trigger for modal -->
+                                            <button type="button" class="d-none" data-edit-id="{{ $doc->id }}"
+                                                data-bs-toggle="modal" data-bs-target="#editDocumentModal"></button>
                                             <button type="button" class="btn btn-outline-info"
                                                 onclick="showDocumentDetail({{ $doc->id }})" title="Detail">
                                                 <i class="bi bi-info-circle"></i>
@@ -229,6 +236,62 @@
                     </div>
                 </div>
             @endif
+        </div>
+    </div>
+
+    <!-- Edit Document Modal -->
+    <div class="modal fade" id="editDocumentModal" tabindex="-1" aria-labelledby="editDocumentModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editDocumentModalLabel">Edit Dokumen</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="editDocumentForm" enctype="multipart/form-data">
+                    @csrf
+                    @method('PUT')
+                    <div class="modal-body">
+                        <input type="hidden" id="edit_document_id" name="document_id">
+                        
+                        <!-- Judul -->
+                        <div class="mb-3">
+                            <label for="edit_judul" class="form-label">Judul Skripsi <span class="text-danger">*</span></label>
+                            <textarea class="form-control" id="edit_judul" name="judul" rows="2" required 
+                                placeholder="Masukkan judul skripsi..."></textarea>
+                            <div class="invalid-feedback"></div>
+                        </div>
+
+                        <!-- Tahun -->
+                            <input type="hidden" class="form-control" id="edit_tahun" name="tahun" 
+                                placeholder="Masukkan tahun..." required min="1900" max="{{ date('Y') + 1 }}">
+
+                        <!-- File PDF -->
+                        <div class="mb-3">
+                            <label for="edit_file" class="form-label">File PDF (Opsional)</label>
+                            <input type="file" class="form-control" id="edit_file" name="file" 
+                                accept=".pdf">
+                            <div class="form-text">
+                                Kosongkan jika tidak ingin mengubah file. File harus berformat PDF, maksimal 10MB.
+                            </div>
+                            <div class="invalid-feedback"></div>
+                            
+                            <!-- Current file info -->
+                            <div id="current_file_info" class="mt-2" style="display: none;">
+                                <small class="text-muted">
+                                    <i class="bi bi-file-pdf"></i> File saat ini: <span id="current_file_name"></span>
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-primary">
+                            <span class="spinner-border spinner-border-sm me-2" id="edit_loading" style="display: none;"></span>
+                            Update
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 
@@ -295,6 +358,142 @@
         function showDocumentDetail(id) {
             // For now, just show an alert. In real implementation, this would open a modal
             alert('Fitur detail dokumen akan segera tersedia. ID: ' + id);
+        }
+
+        // Edit document function
+        function editDocument(id) {
+            // Fetch document data
+            fetch(`/admin/documents/${id}/edit`)
+                .then(response => response.json())
+                .then(data => {
+                    // Populate modal fields
+                    document.getElementById('edit_document_id').value = data.id;
+                    document.getElementById('edit_judul').value = data.judul;
+                    document.getElementById('edit_tahun').value = data.tahun;
+                    
+                    // Show current file info
+                    document.getElementById('current_file_name').textContent = data.file_path.split('/').pop();
+                    document.getElementById('current_file_info').style.display = 'block';
+                    
+                    // Clear any previous validation errors
+                    clearValidationErrors();
+                    
+                    // Show modal using data attribute trigger
+                    const modalTrigger = document.querySelector(`[data-edit-id="${id}"]`);
+                    if (modalTrigger) {
+                        modalTrigger.click();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Gagal memuat data dokumen');
+                });
+        }
+
+        // Handle edit form submission
+        document.getElementById('editDocumentForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const documentId = document.getElementById('edit_document_id').value;
+            const loadingSpinner = document.getElementById('edit_loading');
+            const submitButton = this.querySelector('button[type="submit"]');
+            
+            // Show loading state
+            loadingSpinner.style.display = 'inline-block';
+            submitButton.disabled = true;
+            
+            // Clear previous validation errors
+            clearValidationErrors();
+            
+            fetch(`/admin/documents/${documentId}`, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update table row with new data
+                    updateTableRow(data.document);
+                    
+                    // Close modal using data attribute
+                    const closeButton = document.querySelector('#editDocumentModal .btn-close');
+                    if (closeButton) {
+                        closeButton.click();
+                    }
+                    
+                    // Show success message
+                    showAlert('success', data.message);
+                } else {
+                    // Show validation errors
+                    if (data.errors) {
+                        showValidationErrors(data.errors);
+                    } else {
+                        showAlert('danger', data.message || 'Terjadi kesalahan');
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showAlert('danger', 'Terjadi kesalahan jaringan');
+            })
+            .finally(() => {
+                // Hide loading state
+                loadingSpinner.style.display = 'none';
+                submitButton.disabled = false;
+            });
+        });
+
+        // Helper functions
+        function clearValidationErrors() {
+            document.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+            document.querySelectorAll('.invalid-feedback').forEach(el => el.textContent = '');
+        }
+
+        function showValidationErrors(errors) {
+            Object.keys(errors).forEach(field => {
+                const input = document.getElementById(`edit_${field}`);
+                const feedback = input.nextElementSibling;
+                
+                if (input) {
+                    input.classList.add('is-invalid');
+                    if (feedback && feedback.classList.contains('invalid-feedback')) {
+                        feedback.textContent = errors[field][0];
+                    }
+                }
+            });
+        }
+
+        function updateTableRow(documentData) {
+            const row = document.querySelector(`tr[data-id="${documentData.id}"]`);
+            console.log(row)
+            if (row) {
+                // Update judul cell
+                const judulCell = row.children[3];
+                judulCell.querySelector('small').textContent = documentData.judul;
+                
+                // Update tahun cell
+                const tahunCell = row.children[6];
+                tahunCell.querySelector('.badge').textContent = documentData.tahun;
+            }
+        }
+
+        function showAlert(type, message) {
+            const alertHtml = `
+                <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+            
+            const container = document.querySelector('.container');
+            const firstChild = container.firstElementChild;
+            const alertDiv = document.createElement('div');
+            alertDiv.innerHTML = alertHtml;
+            container.insertBefore(alertDiv.firstElementChild, firstChild.nextSibling);
         }
 
         // Show advanced filters if they have values

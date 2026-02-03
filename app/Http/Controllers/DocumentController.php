@@ -105,6 +105,51 @@ class DocumentController extends Controller
         return $this->documentService->exportToCsv();
     }
 
+    public function edit(Document $document)
+    {
+        return response()->json([
+            'id' => $document->id,
+            'judul' => $document->judul,
+            'tahun' => $document->tahun,
+            'file_path' => $document->file_path
+        ]);
+    }
+
+    public function update(Request $request, Document $document)
+    {
+        $validated = $request->validate($this->documentService->getUpdateValidationRules($document));
+        
+        try {
+            $updatedDocument = $this->documentService->updateDocument($document, $validated);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Dokumen berhasil diperbarui.',
+                'document' => [
+                    'id' => $updatedDocument->id,
+                    'judul' => $updatedDocument->judul,
+                    'tahun' => $updatedDocument->tahun,
+                    'file_path' => $updatedDocument->file_path
+                ]
+            ]);
+        } catch (\InvalidArgumentException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 422);
+        } catch (\Exception $e) {
+            Log::error('Document update failed', [
+                'error' => $e->getMessage(),
+                'document_id' => $document->id
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal memperbarui dokumen. Silakan coba lagi.'
+            ], 500);
+        }
+    }
+
     public function lookupByNim(Request $request)
     {
         $request->validate([

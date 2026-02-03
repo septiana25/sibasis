@@ -252,6 +252,61 @@ class DocumentService
     }
 
     /**
+     * Update document with limited fields (judul, file_path, tahun)
+     */
+    public function updateDocument(Document $document, array $validatedData): Document
+    {
+        $judul = strtoupper($validatedData['judul']);
+        $tahun = (int) $validatedData['tahun'];
+        
+        $updateData = [
+            'judul' => $judul,
+            'tahun' => $tahun,
+        ];
+
+        // Handle file update if provided
+        if (isset($validatedData['file'])) {
+            $file = $validatedData['file'];
+            
+            // Get existing document details for file path structure
+            $fakultas = $document->fakultasRelation;
+            $prodi = $document->prodiRelation;
+            
+            // Delete old file if it exists
+            if (Storage::disk('public')->exists($document->file_path)) {
+                Storage::disk('public')->delete($document->file_path);
+            }
+            
+            // Store new file
+            $filePath = $this->storeDocumentFile(
+                $file, 
+                $document->nim, 
+                $tahun, 
+                $fakultas->nama_fakultas, 
+                $prodi->nama_prodi
+            );
+            
+            $updateData['file_path'] = $filePath;
+        }
+
+        $document->update($updateData);
+        
+        return $document->fresh();
+    }
+
+    /**
+     * Get validation rules for document update
+     */
+    public function getUpdateValidationRules(Document $document): array
+    {
+        return [
+            'judul' => 'required|string|unique:documents,judul,' . $document->id,
+            'tahun' => 'required|numeric|min:1900|max:' . (date('Y') + 5),
+            'file' => 'nullable|file|mimes:pdf|max:10240',
+        ];
+    }
+
+    /**
      * Validate document creation request
      */
     public function getValidationRules(): array
