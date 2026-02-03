@@ -12,6 +12,9 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class DocumentService
 {
+
+    public function __construct(protected SkripsiApiService $skripsiApiService)
+    {}
     /**
      * Get paginated documents
      */
@@ -110,8 +113,12 @@ class DocumentService
         $no_hp = $validatedData['no_hp'] ?? null;
         $alamat = $validatedData['alamat'] ?? null;
         $file = $validatedData['file'];
-        // dd($validatedData);
 
+        $nimExistsFromSkripsiApi = $this->skripsiApiService->getSkripsiFromApi(['nim' => $nim]);
+
+        if ($nimExistsFromSkripsiApi) {
+            throw new \InvalidArgumentException('NIM sudah ada di SIBASKA');
+        }
         $matchProdi = $this->getProdiByKode($prodi_kode);
         if (!$matchProdi) {
             throw new \InvalidArgumentException('Program Studi tidak ditemukan');
