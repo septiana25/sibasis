@@ -270,22 +270,18 @@
                                 <div class="popular-list">
                                     @foreach ($popularKeywords as $index => $item)
                                         <div class="popular-item">
-                                            <form action="{{ route('skripsi.search') }}" method="POST" class="mb-0">
-                                                @csrf
-                                                <input type="hidden" name="judul" value="{{ $item['judul_ta'] }}">
-                                                <button type="submit" class="popular-button">
-                                                    <div class="popular-rank">{{ $index + 1 }}</div>
-                                                    <div class="popular-content">
-                                                        <div class="popular-title">
-                                                            {{ Str::limit($item['judul_ta'], 50) }}
-                                                        </div>
-                                                        <div class="popular-count">
-                                                            <i class="bi bi-search me-1"></i>{{ $item['total'] }}
-                                                            pencarian
-                                                        </div>
+                                            <a class="popular-button text-decoration-none" href="{{ route('skripsi.show', $item['nim']) }}">
+                                                <div class="popular-rank">{{ $index + 1 }}</div>
+                                                <div class="popular-content">
+                                                    <div class="popular-title text-uppercase">
+                                                        {{ Str::limit($item['judul_ta'], 50) }}
                                                     </div>
-                                                </button>
-                                            </form>
+                                                    <div class="popular-count">
+                                                        <i class="bi bi-search me-1"></i>{{ $item['total'] }}
+                                                        pencarian
+                                                    </div>
+                                                </div>
+                                            </a>
                                         </div>
                                         @if (!$loop->last)
                                             <div class="popular-divider"></div>
@@ -389,25 +385,6 @@
 
             // Auto-focus search input
             searchInput.focus();
-
-            // Enhanced form submission with validation
-            /* searchForm.addEventListener('submit', function(e) {
-                const searchValue = searchInput.value.trim();
-                if (!searchValue) {
-                    e.preventDefault();
-                    searchInput.focus();
-                    // Add visual feedback
-                    searchInput.classList.add('is-invalid');
-                    setTimeout(() => searchInput.classList.remove('is-invalid'), 2000);
-                }
-            }); */
-
-            // Real-time search validation
-            /* searchInput.addEventListener('input', function() {
-                if (this.value.trim()) {
-                    this.classList.remove('is-invalid');
-                }
-            }); */
 
             // Smooth scroll to results
             if (window.location.search.includes('judul=')) {

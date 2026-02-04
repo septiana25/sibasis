@@ -68,26 +68,30 @@ class SkripsiController extends Controller
 
     public function show($nim)
     {
-        $dataSession = session('skripsi_results') ?? [];
-        [$detail, $fileInfo] = $this->skripsiService->getDocumentFromSession($nim, $dataSession);
-        $member = Auth::guard('member')->user();
+        try {
+            $dataSession = session('skripsi_results') ?? [];
+            [$detail, $fileInfo] = $this->skripsiService->getDocumentFromSession($nim, $dataSession);
+            $member = Auth::guard('member')->user();
 
-        $detail['member_id'] = $member->member_id;
-        $detail['member_name'] = $member->member_name;
-        $detail['member_type_id'] = $member->member_type_id;
+            $detail['member_id'] = $member->member_id;
+            $detail['member_name'] = $member->member_name;
+            $detail['member_type_id'] = $member->member_type_id;
 
 
 
-        $bookmarkFlagSession = $this->skripsiService->getBookmarkByMember($member->member_id, $detail);
+            $bookmarkFlagSession = $this->skripsiService->getBookmarkByMember($member->member_id, $detail);
 
-        $detail['bookmarked'] = $bookmarkFlagSession;
+            $detail['bookmarked'] = $bookmarkFlagSession;
 
-        // optional: log
-        if (isset($this->skripsiService) && method_exists($this->skripsiService, 'logSearchStat')) {
-            $this->skripsiService->logSearchStat($detail);
+            // optional: log
+            if (isset($this->skripsiService) && method_exists($this->skripsiService, 'logSearchStat')) {
+                $this->skripsiService->logSearchStat($detail);
+            }
+
+            return view('skripsi.detail', ['data' => $detail, 'pdf' => $fileInfo, 'nim' => $nim]);
+        } catch (\Exception $e) {
+            return redirect()->route('skripsi.index')->with('error', $e->getMessage());
         }
-
-        return view('skripsi.detail', ['data' => $detail, 'pdf' => $fileInfo, 'nim' => $nim]);
     }
 
     /**

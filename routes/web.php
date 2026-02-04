@@ -29,6 +29,7 @@ Route::middleware('logout.others:member')->group(function () {
 Route::middleware('auth:member')->group(function () {
     Route::get('/skripsi', [SkripsiController::class, 'index'])->name('skripsi.index');
     Route::get('/skripsi/{nim}', [SkripsiController::class, 'show'])->name('skripsi.show');
+    Route::get('/skripsi/link/{nim}', [SkripsiController::class, 'getByLink'])->name('skripsi.link');
     Route::post('/skripsi/search', [SkripsiController::class, 'search'])->name('skripsi.search');
     Route::get('/skripsi/bookmark/{nim}', [SkripsiController::class, 'toggleBookmark'])->name('skripsi.bookmark');
     Route::get('/skripsi/stream/{nim}', [SkripsiController::class, 'streamPdf'])->name('skripsi.stream');

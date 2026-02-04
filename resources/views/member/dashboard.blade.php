@@ -25,8 +25,7 @@
                                 @foreach ($bookmarks as $index => $bookmark)
                                     <tr>
                                         <th scope="row">{{ $index + 1 }}</th>
-                                        <td><a href="#" class="text-decoration-none text-light-emphasis"
-                                                onclick="submitPostToBlank('{{ route('skripsi.search') }}', '{{ $bookmark->judul_ta }}'); return false;">
+                                        <td><a href="{{ route('skripsi.show', $bookmark->nim) }}" class="text-decoration-none text-light-emphasis text-uppercase" target="_blank">
                                                 {{ $bookmark->judul_ta }}
                                             </a>
                                         </td>
@@ -56,8 +55,7 @@
                                 @foreach ($statistic as $index => $static)
                                     <tr>
                                         <th scope="row">{{ $index + 1 }}</th>
-                                        <td><a href="#" class="text-decoration-none text-light-emphasis"
-                                                onclick="submitPostToBlank('{{ route('skripsi.search') }}', '{{ $static->judul_ta }}'); return false;">
+                                        <td><a href="{{ route('skripsi.show', $static->nim) }}" class="text-decoration-none text-light-emphasis text-uppercase" target="_blank">
                                                 {{ $static->judul_ta }}
                                             </a>
                                         </td>
@@ -71,31 +69,4 @@
             </div>
         </div>
     </div>
-
-    <script>
-        function submitPostToBlank(action, judul) {
-            const form = document.createElement('form');
-            form.method = 'POST';
-            form.action = action;
-            form.target = '_blank';
-
-            // CSRF token
-            const token = document.createElement('input');
-            token.type = 'hidden';
-            token.name = '_token';
-            token.value = '{{ csrf_token() }}';
-            form.appendChild(token);
-
-            // Input judul
-            const input = document.createElement('input');
-            input.type = 'hidden';
-            input.name = 'judul';
-            input.value = judul;
-            form.appendChild(input);
-
-            document.body.appendChild(form);
-            form.submit();
-            document.body.removeChild(form);
-        }
-    </script>
 @endsection

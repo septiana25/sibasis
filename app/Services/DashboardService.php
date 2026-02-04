@@ -16,8 +16,8 @@ class DashboardService
 
   public function getStatisticByMember(int $member_id, int $limit = 5)
   {
-    return SearchStatistic::select('judul_ta', 'program_studi', DB::raw('count(*) as total'))
-      ->groupBy('judul_ta', 'program_studi')
+    return SearchStatistic::select('nim', 'judul_ta', DB::raw('count(*) as total'))
+      ->groupBy('nim', 'judul_ta')
       ->orderByDesc('total')
       ->where('member_id', $member_id)
       ->limit($limit)

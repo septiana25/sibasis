@@ -134,14 +134,29 @@ class SkripsiService
 
     public function getDocumentFromSession($nim, array $dataSession): array
     {
+        $queryParams = [
+            'nim' => $nim,
+        ];
 
         if (!$dataSession || !isset($dataSession['data']) || !is_array($dataSession['data'])) {
-            abort(404, 'Sesi data skripsi tidak ditemukan atau telah kedaluwarsa.');
+
+            //validasi nim integer dan panjang 10 karakter
+            if (!is_numeric($nim) || strlen($nim) != 10) {
+                throw new \Exception('Silahkan lakukan pencarian terlebih dahulu.');
+            }
+
+            $dataSession = $this->helperGetApiByNim($nim);
         }
 
         // Validasi nim - check if nim exists as key in the data array
         if (!array_key_exists($nim, $dataSession['data'])) {
-            abort(404, 'Data dengan NIM tersebut tidak ditemukan.');
+
+            if (!is_numeric($nim) || strlen($nim) != 10) {
+                throw new \Exception('Judul Skripsi tidak ditemukan dalam hasil pencarian. Silahkan lakukan pencarian kembali.');
+            }
+
+            $dataSession = $this->helperGetApiByNim($nim);
+            
         }
 
         $detail = $dataSession['data'][$nim];
@@ -169,6 +184,24 @@ class SkripsiService
 
         // Kembalikan detail dan fileInfo (bisa null kalau benar-benar tidak ada dokumen)
         return [$detail, $fileInfo];
+    }
+
+    private function helperGetApiByNim(string $nim)
+    {
+        $queryParams = [
+            'nim' => $nim,
+        ];
+
+        // Get API results
+        $resultsService = $this->searchSkripsiFromApi($queryParams);
+
+        if (!$resultsService) {
+            throw new \Exception("Data tidak ditemukan.");
+        }
+
+        $dataSession = $this->transformDataToNimKeys($resultsService);
+        session(['skripsi_results' => $dataSession]);
+        return $dataSession;
     }
 
     public function logSearchStat(array $statistik)
@@ -214,8 +247,8 @@ class SkripsiService
 
     public function getTopSearchStatistics($limit = 5)
     {
-        return SearchStatistic::select('judul_ta', 'program_studi', DB::raw('count(*) as total'))
-            ->groupBy('judul_ta', 'program_studi')
+        return SearchStatistic::select('nim', 'judul_ta', DB::raw('count(*) as total'))
+            ->groupBy('nim', 'judul_ta')
             ->orderByDesc('total')
             ->limit($limit)
             ->get();
