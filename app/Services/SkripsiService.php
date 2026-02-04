@@ -5,6 +5,7 @@ use App\Models\Bookmark;
 use App\Models\Fakultas;
 use App\Models\SearchStatistic;
 use GuzzleHttp\Client;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
@@ -37,6 +38,94 @@ class SkripsiService{
     public function searchSkripsiFromApi(array $queryParams)
     {
         return $this->skripsiApiService->getSkripsiFromApi($queryParams);
+    }
+
+    /**
+     * Handle complete search process including data transformation and session storage
+     */
+    public function handleSearchProcess(array $queryParams): array
+    {
+        // Get API results
+        $resultsService = $this->searchSkripsiFromApi($queryParams);
+
+        if (!$resultsService) {
+            throw new \Exception("Data tidak ditemukan.");
+        }
+
+        // Get dropdown data for view
+        [$defaultYear, $fakultasList] = $this->getDropdown();
+
+        // Add search parameters to results for UI display
+        $resultsService = $this->addSearchParametersToResults($resultsService, $queryParams);
+
+        // Transform array to use NIM as keys
+        $resultsService = $this->transformDataToNimKeys($resultsService);
+
+        // Store in session
+        session(['skripsi_results' => $resultsService]);
+
+        return [
+            'results' => $resultsService,
+            'fakultasList' => $fakultasList, 
+            'yearList' => $defaultYear
+        ];
+    }
+
+    /**
+     * Add search parameters to results for UI query display
+     */
+    private function addSearchParametersToResults(array $resultsService, array $queryParams): array
+    {
+        $fieldsToPush = [
+            'judul'    => 'judul_ta',
+            'fakultas' => 'fakultas', 
+            'prodi'    => 'prodi',
+            'tahun'     => 'tahun',
+        ];
+
+        foreach ($fieldsToPush as $paramKey => $resultKey) {
+            if (isset($queryParams[$paramKey])) {
+                $resultsService[$resultKey] = $queryParams[$paramKey];
+            }
+        }
+
+        return $resultsService;
+    }
+
+    /**
+     * Convert array indices to use NIM as keys for easier access
+     */
+    private function transformDataToNimKeys(array $resultsService): array
+    {
+        if (isset($resultsService['data']) && is_array($resultsService['data'])) {
+            $dataByNim = [];
+            foreach ($resultsService['data'] as $student) {
+                if (isset($student['nim'])) {
+                    $dataByNim[$student['nim']] = $student;
+                }
+            }
+            $resultsService['data'] = $dataByNim;
+        }
+
+        return $resultsService;
+    }
+
+    /**
+     * Prepare query parameters from request
+     */
+    public function prepareQueryParams(Request $request): array
+    {
+        $queryParams = [];
+
+        $allowedFields = ['judul', 'page', 'fakultas', 'prodi', 'tahun'];
+        
+        foreach ($allowedFields as $field) {
+            if ($request->filled($field)) {
+                $queryParams[$field] = $request->input($field);
+            }
+        }
+
+        return $queryParams;
     }
 
     public function getDocumentFromSession($nim, array $dataSession): array

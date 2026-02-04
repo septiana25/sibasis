@@ -15,10 +15,9 @@ class SkripsiController extends Controller
 {
     /** @var \GuzzleHttp\Client */
     protected $httpClient;
-    protected $skripsiService;
 
 
-    public function __construct(SkripsiService $skripsiService)
+    public function __construct(protected SkripsiService $skripsiService)
     {
         // Inisialisasi Guzzle client jika belum di-inject
         $this->httpClient = new Client([
@@ -26,8 +25,6 @@ class SkripsiController extends Controller
             'connect_timeout' => 10,
             // 'verify' => false, // jangan pakai di production
         ]);
-        
-        $this->skripsiService = $skripsiService;
     }
     
     public function index()
@@ -47,64 +44,27 @@ class SkripsiController extends Controller
 
     public function search(Request $request)
     {
-
-        $queryParams = [];
-        $resultsService = null;
-
-        if ($request->filled('judul'))    $queryParams['judul'] = $request->input('judul');
-        if ($request->filled('page'))     $queryParams['page'] = $request->input('page');
-        if ($request->filled('fakultas')) $queryParams['fakultas'] = $request->input('fakultas');
-        if ($request->filled('prodi'))    $queryParams['prodi'] = $request->input('prodi');
-        if ($request->filled('tahun'))     $queryParams['tahun'] = $request->input('tahun');
-        
         try {
+            // Prepare query parameters
+            $queryParams = $this->skripsiService->prepareQueryParams($request);
+            
+            // Handle complete search process
+            $searchData = $this->skripsiService->handleSearchProcess($queryParams);
+            
+            // Get popular keywords for view
             $popular = $this->skripsiService->getTopSearchStatistics();
-            $resultsService = $this->skripsiService->searchSkripsiFromApi($queryParams);
-
-            if (!$resultsService) {
-                throw new Exception("Data tidak ditemukan.");
-            }
             
-            [$defaultYear, $fakultasList] = $this->skripsiService->getDropdown();
-            
-            // Setup parameter untuk kebutuhan ui query pencarian
-            $fieldsToPush = [
-                'judul'    => 'judul_ta',
-                'fakultas' => 'fakultas',
-                'prodi'    => 'prodi',
-                'tahun'     => 'tahun',
-            ];
-            
-            foreach ($fieldsToPush as $paramKey => $resultKey) {
-                if (isset($queryParams[$paramKey])) {
-                    $resultsService[$resultKey] = $queryParams[$paramKey];
-                }
-            }
-            
-            // Konversikan indeks array ke NIM sebagai kunci agar lebih mudah diakses.
-            if (isset($resultsService['data']) && is_array($resultsService['data'])) {
-                $dataByNim = [];
-                foreach ($resultsService['data'] as $student) {
-                    if (isset($student['nim'])) {
-                        $dataByNim[$student['nim']] = $student;
-                    }
-                }
-                $resultsService['data'] = $dataByNim;
-            }
-            
-            session(['skripsi_results' => $resultsService]);
+            return view('skripsi.index', [
+                'results' => $searchData['results'],
+                'popularKeywords' => $popular,
+                'fakultasList' => $searchData['fakultasList'],
+                'yearList' => $searchData['yearList']
+            ]);
             
         } catch (\Exception $e) {
             session(['skripsi_results' => []]);
             return redirect()->route('skripsi.index')->with('error', $e->getMessage());
         }
-
-        return view('skripsi.index',  [
-            'results' => $resultsService, 
-            'popularKeywords' => $popular,
-            'fakultasList' => $fakultasList,
-            'yearList' => $defaultYear
-        ]);
     }
 
     public function show($nim)
