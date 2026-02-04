@@ -20,7 +20,7 @@ class MahasiswaAuthController extends Controller
         $nim = $request->nim;
 
         $response = Http::get("https://api-univ.ac.id/mahasiswa/{$nim}");
-        
+
         if ($response->successful() && $response->json('status') === 'aktif') {
             Session::put('nim', $nim);
             return redirect()->route('skripsi.index');

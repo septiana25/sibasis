@@ -22,15 +22,15 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach ($bookmarks as $index => $bookmark )
+                                @foreach ($bookmarks as $index => $bookmark)
                                     <tr>
-                                    <th scope="row">{{ $index + 1}}</th>
-                                    <td><a href="#" class="text-decoration-none text-light-emphasis"
-                                        onclick="submitPostToBlank('{{ route('skripsi.search') }}', '{{ $bookmark->judul_ta }}'); return false;">
-                                            {{ $bookmark->judul_ta }}
-                                        </a>
-                                    </td>
-                                </tr>
+                                        <th scope="row">{{ $index + 1 }}</th>
+                                        <td><a href="#" class="text-decoration-none text-light-emphasis"
+                                                onclick="submitPostToBlank('{{ route('skripsi.search') }}', '{{ $bookmark->judul_ta }}'); return false;">
+                                                {{ $bookmark->judul_ta }}
+                                            </a>
+                                        </td>
+                                    </tr>
                                 @endforeach
                             </tbody>
                         </table>
@@ -53,16 +53,16 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach ($statistic as $index => $static )
+                                @foreach ($statistic as $index => $static)
                                     <tr>
-                                    <th scope="row">{{ $index + 1}}</th>
-                                    <td><a href="#" class="text-decoration-none text-light-emphasis"
-                                        onclick="submitPostToBlank('{{ route('skripsi.search') }}', '{{ $static->judul_ta }}'); return false;">
-                                            {{ $static->judul_ta }}
-                                        </a>
-                                    </td>
-                                    <td>{{ $static->total }}</td>
-                                </tr>
+                                        <th scope="row">{{ $index + 1 }}</th>
+                                        <td><a href="#" class="text-decoration-none text-light-emphasis"
+                                                onclick="submitPostToBlank('{{ route('skripsi.search') }}', '{{ $static->judul_ta }}'); return false;">
+                                                {{ $static->judul_ta }}
+                                            </a>
+                                        </td>
+                                        <td>{{ $static->total }}</td>
+                                    </tr>
                                 @endforeach
                             </tbody>
                         </table>
@@ -73,29 +73,29 @@
     </div>
 
     <script>
-    function submitPostToBlank(action, judul) {
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = action;
-        form.target = '_blank';
+        function submitPostToBlank(action, judul) {
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = action;
+            form.target = '_blank';
 
-        // CSRF token
-        const token = document.createElement('input');
-        token.type = 'hidden';
-        token.name = '_token';
-        token.value = '{{ csrf_token() }}';
-        form.appendChild(token);
+            // CSRF token
+            const token = document.createElement('input');
+            token.type = 'hidden';
+            token.name = '_token';
+            token.value = '{{ csrf_token() }}';
+            form.appendChild(token);
 
-        // Input judul
-        const input = document.createElement('input');
-        input.type = 'hidden';
-        input.name = 'judul';
-        input.value = judul;
-        form.appendChild(input);
+            // Input judul
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'judul';
+            input.value = judul;
+            form.appendChild(input);
 
-        document.body.appendChild(form);
-        form.submit();
-        document.body.removeChild(form);
-    }
-</script>
+            document.body.appendChild(form);
+            form.submit();
+            document.body.removeChild(form);
+        }
+    </script>
 @endsection

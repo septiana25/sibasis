@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Services;
 
 use App\Models\Bookmark;
@@ -11,30 +12,32 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
-class SkripsiService{
+class SkripsiService
+{
 
     public function __construct(protected SkripsiApiService $skripsiApiService) {}
 
-    public function getDropdown(): array {
+    public function getDropdown(): array
+    {
         /* data get database pakai ini
         $defaultFakultas = Fakultas::select('id', 'nama')->get()->toArray();
         $defaultProdi = Prodi::select('id', 'nama')->get()->toArray();
         */
         $defaultFakultas = [
-            ['index' => 100, 'id' => 1, 'nama' => 'FITK'], 
-            ['index' => 100, 'id' => 2, 'nama' => 'FEBI'], 
-            ['index' => 200, 'id' => 3, 'nama' => 'FS'], 
-            ['index' => 100, 'id' => 4, 'nama' => 'FDKI'], 
-            ['index' => 300, 'id' => 5, 'nama' => 'FUA'], 
+            ['index' => 100, 'id' => 1, 'nama' => 'FITK'],
+            ['index' => 100, 'id' => 2, 'nama' => 'FEBI'],
+            ['index' => 200, 'id' => 3, 'nama' => 'FS'],
+            ['index' => 100, 'id' => 4, 'nama' => 'FDKI'],
+            ['index' => 300, 'id' => 5, 'nama' => 'FUA'],
             ['index' => 600, 'id' => 6, 'nama' =>  'S2'],
             ['index' => 700, 'id' => 7, 'nama' =>  'S3'],
         ];
 
         $fakultasList = Fakultas::with('prodi')->get();
         $defaultYear = ['year' => 2025, 'year' => 2024, 'year' => 2023, 'year' => 2022, 'year' => 2021];
-        
+
         return [$defaultYear, $fakultasList];
-    } 
+    }
 
     public function searchSkripsiFromApi(array $queryParams)
     {
@@ -67,7 +70,7 @@ class SkripsiService{
 
         return [
             'results' => $resultsService,
-            'fakultasList' => $fakultasList, 
+            'fakultasList' => $fakultasList,
             'yearList' => $defaultYear
         ];
     }
@@ -79,7 +82,7 @@ class SkripsiService{
     {
         $fieldsToPush = [
             'judul'    => 'judul_ta',
-            'fakultas' => 'fakultas', 
+            'fakultas' => 'fakultas',
             'prodi'    => 'prodi',
             'tahun'     => 'tahun',
         ];
@@ -119,7 +122,7 @@ class SkripsiService{
         $queryParams = [];
 
         $allowedFields = ['judul', 'page', 'fakultas', 'prodi', 'tahun'];
-        
+
         foreach ($allowedFields as $field) {
             if ($request->filled($field)) {
                 $queryParams[$field] = $request->input($field);
@@ -166,22 +169,21 @@ class SkripsiService{
 
         // Kembalikan detail dan fileInfo (bisa null kalau benar-benar tidak ada dokumen)
         return [$detail, $fileInfo];
-
     }
 
     public function logSearchStat(array $statistik)
     {
         $validator = Validator::make($statistik, [
             'member_id' => 'required',
-            'member_name' => 'required', 
-            'member_type_id' => 'required', 
-            'nim' => 'required', 
-            'nama' => 'required', 
-            'judul_ta' => 'required', 
-            'program_studi' => 'required', 
+            'member_name' => 'required',
+            'member_type_id' => 'required',
+            'nim' => 'required',
+            'nama' => 'required',
+            'judul_ta' => 'required',
+            'program_studi' => 'required',
             'fakultas' => 'required',
         ]);
-        
+
 
         if ($validator->fails()) {
             Log::error($validator->errors());
@@ -200,7 +202,7 @@ class SkripsiService{
 
         SearchStatistic::create([
             'member_id' => $statistik['member_id'],
-            'member_name' => $statistik['member_name'], 
+            'member_name' => $statistik['member_name'],
             'member_type_id' => $statistik['member_type_id'],
             'nim' => $statistik['nim'],
             'nama' => $statistik['nama'],
@@ -262,12 +264,12 @@ class SkripsiService{
         if (!$dataSession || !isset($dataSession['data']) || !is_array($dataSession['data'])) {
             return;
         }
-        
+
         // Pastikan nim ada
         if (!array_key_exists($nim, $dataSession['data'])) {
             return;
         }
-        
+
         // Set flag 'bookmarked'
         $dataSession['data'][$nim]['bookmarked'] = $value;
 
@@ -277,7 +279,7 @@ class SkripsiService{
 
     public function getBookmarkByMember(int $member_id, array $detail)
     {
-        if (isset($detail['bookmarked']) && $detail['bookmarked'] ) return true;
+        if (isset($detail['bookmarked']) && $detail['bookmarked']) return true;
         //if (isset($detail['bookmarked']) && !$detail['bookmarked'] ) return false;
 
         $bookmark = $this->getBookmark($member_id, $detail);
@@ -285,8 +287,6 @@ class SkripsiService{
         if (!$bookmark) return;
 
         return true;
-        
-
     }
 
     private function getBookmark(int $member_id, array $detail)
@@ -318,7 +318,7 @@ class SkripsiService{
         //2. sanitize dan decode url
         $url = $fileInfo['url_file'];
         $decodedUrl = $this->sanitizeAndDecodeUrl($url);
-        
+
         if (!$decodedUrl) {
             Log::error('Invalid or unsafe PDF URL', [
                 'original_url' => $url,
@@ -387,7 +387,7 @@ class SkripsiService{
     {
         $status = $response->getStatusCode();
         $bodyPreview = '[no body]';
-        
+
         try {
             $bodyPreview = $response->getBody()->read(4096);
         } catch (\Throwable $e) {
@@ -414,7 +414,7 @@ class SkripsiService{
     private function sanitizeAndDecodeUrl(string $url): ?string
     {
         $parsedUrl = parse_url($url);
-        
+
         if (!$parsedUrl) {
             return null;
         }
@@ -431,9 +431,9 @@ class SkripsiService{
         $decodedPath = urldecode($url);
         $decodedPath = str_replace("\0", '', $decodedPath);
         $decodedPath = str_replace('\\', '/', $decodedPath);
-        
+
         if (
-            str_contains($decodedPath, '../') || 
+            str_contains($decodedPath, '../') ||
             str_contains($decodedPath, '..\\') ||
             str_contains($decodedPath, '...') ||
             preg_match('#\.\.[\\/]#', $decodedPath)
@@ -462,9 +462,7 @@ class SkripsiService{
         $path     = $parsed['path'] ?? '';
         $query    = isset($parsed['query']) ? '?' . $parsed['query'] : '';
         $fragment = isset($parsed['fragment']) ? '#' . $parsed['fragment'] : '';
-        
+
         return "$scheme$user$pass$host$port$path$query$fragment";
     }
-
-    
 }

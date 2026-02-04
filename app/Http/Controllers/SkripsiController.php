@@ -26,19 +26,19 @@ class SkripsiController extends Controller
             // 'verify' => false, // jangan pakai di production
         ]);
     }
-    
+
     public function index()
     {
         $popular = $this->skripsiService->getTopSearchStatistics();
 
         [$defaultYear, $fakultasList] = $this->skripsiService->getDropdown();
-              
+
 
         return view('skripsi.index', [
-        'results' => session('skripsi_results') ?? false,
-        'popularKeywords' => $popular,
-        'fakultasList' => $fakultasList,
-        'yearList' => $defaultYear
+            'results' => session('skripsi_results') ?? false,
+            'popularKeywords' => $popular,
+            'fakultasList' => $fakultasList,
+            'yearList' => $defaultYear
         ]);
     }
 
@@ -47,20 +47,19 @@ class SkripsiController extends Controller
         try {
             // Prepare query parameters
             $queryParams = $this->skripsiService->prepareQueryParams($request);
-            
+
             // Handle complete search process
             $searchData = $this->skripsiService->handleSearchProcess($queryParams);
-            
+
             // Get popular keywords for view
             $popular = $this->skripsiService->getTopSearchStatistics();
-            
+
             return view('skripsi.index', [
                 'results' => $searchData['results'],
                 'popularKeywords' => $popular,
                 'fakultasList' => $searchData['fakultasList'],
                 'yearList' => $searchData['yearList']
             ]);
-            
         } catch (\Exception $e) {
             session(['skripsi_results' => []]);
             return redirect()->route('skripsi.index')->with('error', $e->getMessage());
@@ -77,10 +76,10 @@ class SkripsiController extends Controller
         $detail['member_name'] = $member->member_name;
         $detail['member_type_id'] = $member->member_type_id;
 
-        
-        
+
+
         $bookmarkFlagSession = $this->skripsiService->getBookmarkByMember($member->member_id, $detail);
-  
+
         $detail['bookmarked'] = $bookmarkFlagSession;
 
         // optional: log
@@ -103,43 +102,44 @@ class SkripsiController extends Controller
 
             // Prepare HTTP options
             $options = $this->skripsiService->preparePdfHttpOptions($request);
-            
+
             // Make HTTP request
             $response = $this->httpClient->request('GET', $url, $options);
             $status = $response->getStatusCode();
-            
+
             // Handle errors
             if ($status >= 400) {
                 $errorData = $this->skripsiService->handlePdfError($response, $url, $nim);
                 return response($errorData['body'], $errorData['status'])
                     ->header('Content-Type', $errorData['content_type']);
             }
-            
+
             // Prepare response headers
             $headers = $this->skripsiService->preparePdfHeaders($response, $url);
-            
+
             // Create streaming response
             $body = $response->getBody();
             $streamed = new StreamedResponse(function () use ($body) {
                 while (!$body->eof()) {
                     echo $body->read(1024 * 8);
-                    if (function_exists('ob_flush')) { @ob_flush(); }
+                    if (function_exists('ob_flush')) {
+                        @ob_flush();
+                    }
                     flush();
                 }
             }, $status, $headers);
-            
+
             return $streamed;
-            
         } catch (\Throwable $e) {
             if ($e->getCode() === 404 || $e->getCode() === 400) {
                 return response($e->getMessage(), $e->getCode());
             }
-            
+
             Log::error('PDF streaming error', [
                 'nim' => $nim,
                 'exception' => $e->getMessage(),
             ]);
-            
+
             return response('Gagal menghubungi sumber file (gateway error).', 502);
         }
     }
@@ -147,7 +147,7 @@ class SkripsiController extends Controller
     public function toggleBookmark(Request $request, $nim)
     {
         $dataSession = session('skripsi_results');
-        if(empty($dataSession)){
+        if (empty($dataSession)) {
             return redirect()->route('skripsi.index')->with('success', 'session data habis');
         }
 
@@ -157,5 +157,4 @@ class SkripsiController extends Controller
 
         return redirect()->back()->with('success', $message);
     }
-
 }

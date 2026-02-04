@@ -81,8 +81,7 @@
                             <label for="prodi" class="form-label">Prodi</label>
                             <input type="text" name="prodi" id="prodi" class="form-control"
                                 value="{{ old('prodi') }}" readonly required>
-                            <input type="hidden" name="prodi_kode" id="prodi_kode"
-                                value="{{ old('prodi_kode') }}">
+                            <input type="hidden" name="prodi_kode" id="prodi_kode" value="{{ old('prodi_kode') }}">
                         </div>
 
                         <div class="col-12">
@@ -109,7 +108,7 @@
             <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
             <span role="status">${message}</span>
         `;
-        
+
         const studentLookup = {
             // Cache DOM elements for better performance
             elements: {

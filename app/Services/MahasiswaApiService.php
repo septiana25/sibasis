@@ -33,7 +33,7 @@ class MahasiswaApiService
     public function getDataMahasiswaAPI(string $nim)
     {
         // $mahasiswa = Mahasiswa::where('nim', $req->nim)->pluck('nama', 'kodejurusan');
-        $api_url = rtrim($this->baseUrl, '/') . "/internal/sibaska/student?nim={$nim}"; 
+        $api_url = rtrim($this->baseUrl, '/') . "/internal/sibaska/student?nim={$nim}";
         $api_header = ['Authorization' => 'Bearer ' . $this->token];
         $mahasiswa = json_decode(Http::withHeaders($api_header)->get($api_url))->data;
         return $mahasiswa;
@@ -45,7 +45,7 @@ class MahasiswaApiService
         }
 
         $url = rtrim($this->baseUrl, '/') . '/mahasiswa/filter';
-        
+
         try {
             $response = Http::withToken($this->token)
                 ->asForm()
@@ -53,14 +53,13 @@ class MahasiswaApiService
                 ->post($url, ['nim' => $nim]);
 
             return $this->processApiResponse($response, $nim, $url);
-            
         } catch (\Exception $e) {
             Log::error('Mahasiswa API request failed', [
                 'nim' => $nim,
                 'error' => $e->getMessage(),
                 'url' => $url
             ]);
-            
+
             throw new \Exception('Gagal menghubungi API mahasiswa: ' . $e->getMessage());
         }
     }
@@ -90,7 +89,7 @@ class MahasiswaApiService
                 'status' => $response->status(),
                 'body' => $response->body(),
             ]);
-            
+
             throw new \Exception('Data mahasiswa tidak ditemukan');
         }
 
@@ -104,8 +103,8 @@ class MahasiswaApiService
     {
         // Handle different response structures
         if (isset($data['data'])) {
-            $studentData = is_array($data['data']) && isset($data['data'][0]) 
-                ? $data['data'][0] 
+            $studentData = is_array($data['data']) && isset($data['data'][0])
+                ? $data['data'][0]
                 : $data['data'];
         } elseif (is_array($data) && isset($data[0])) {
             $studentData = $data[0];

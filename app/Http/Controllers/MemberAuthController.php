@@ -15,7 +15,8 @@ class MemberAuthController extends Controller
         $this->memberService = $memberService;
     }
 
-    public function showLoginForm(){
+    public function showLoginForm()
+    {
 
         // Cek apakah member sudah login menggunakan guard member
         if (Auth::guard('member')->check()) {
@@ -23,7 +24,6 @@ class MemberAuthController extends Controller
         }
 
         return view('member.login');
-        
     }
 
     public function login(Request $request)
@@ -39,7 +39,7 @@ class MemberAuthController extends Controller
         session(['member_id' => $member->member_id]);
 
         return redirect()->route('skripsi.index')
-            ->with('success', 'Login anggota berhasil. Selamat datang, '.$member->member_name);
+            ->with('success', 'Login anggota berhasil. Selamat datang, ' . $member->member_name);
     }
 
     public function dashboard()
@@ -57,5 +57,4 @@ class MemberAuthController extends Controller
 
         return redirect()->route('login')->with('success', 'Logout berhasil.');
     }
-
 }
