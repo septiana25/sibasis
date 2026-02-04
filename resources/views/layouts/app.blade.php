@@ -9,7 +9,7 @@
     <noscript>
         <meta http-equiv="refresh" content="0;url={{ route('nojs') }}">
     </noscript>
-    <title>{{ config('app.name', 'Laravel') }}</title>
+    <title>@yield('title') - {{ config('app.name', 'Laravel') }}</title>
     <link rel="stylesheet" href="{{ asset('css/style.css') }}">
     <!-- Favicon link -->
     <link rel="icon" href="{{ asset('favicon.ico') }}" type="image/x-icon"> 

@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Pencarian Skripsi')
+@section('title', trim(($results['judul_ta'] ?? '') . ' ' . ($results['tahun'] ?? '')) ? : 'Pencarian Skripsi')
 
 @section('content')
 <!-- Elegant Hero Section -->
