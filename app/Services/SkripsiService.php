@@ -5,6 +5,7 @@ use App\Models\Bookmark;
 use App\Models\Fakultas;
 use App\Models\SearchStatistic;
 use GuzzleHttp\Client;
+use GuzzleHttp\Psr7\Response;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -299,6 +300,170 @@ class SkripsiService{
         else $query->where('judul_ta', $judul);
 
         return $query->first();
+    }
+
+    /**
+     * Get PDF file info and validate URL for streaming
+     */
+    public function preparePdfStream(string $nim): array
+    {
+        //1. ambil data dari session
+        $dataSession = session('skripsi_results') ?? [];
+        [$detail, $fileInfo] = $this->getDocumentFromSession($nim, $dataSession);
+
+        if (!$fileInfo || empty($fileInfo['url_file'])) {
+            throw new \Exception('File PDF tidak tersedia.', 404);
+        }
+
+        //2. sanitize dan decode url
+        $url = $fileInfo['url_file'];
+        $decodedUrl = $this->sanitizeAndDecodeUrl($url);
+        
+        if (!$decodedUrl) {
+            Log::error('Invalid or unsafe PDF URL', [
+                'original_url' => $url,
+                'nim' => $nim,
+            ]);
+            throw new \Exception('URL file tidak valid atau tidak aman.', 400);
+        }
+
+        return [
+            'detail' => $detail,
+            'fileInfo' => $fileInfo,
+            'url' => $decodedUrl
+        ];
+    }
+
+    /**
+     * Prepare HTTP options for PDF request
+     */
+    public function preparePdfHttpOptions(Request $request): array
+    {
+        $rangeHeader = $request->header('Range');
+
+        $options = [
+            'headers' => [
+                'User-Agent' => $request->header('User-Agent') ?? 'Laravel-Proxy/1.0',
+            ],
+            'stream' => true,
+            'http_errors' => false,
+            'allow_redirects' => true,
+        ];
+
+        if ($rangeHeader) {
+            $options['headers']['Range'] = $rangeHeader;
+        }
+
+        return $options;
+    }
+
+    /**
+     * Prepare response headers for PDF streaming
+     */
+    public function preparePdfHeaders(Response $response, string $url): array
+    {
+        $contentType = $response->getHeaderLine('Content-Type') ?: 'application/pdf';
+        $filename = basename(parse_url($url, PHP_URL_PATH) ?: 'file.pdf');
+
+        $outHeaders = [
+            'Content-Type' => $contentType,
+            'Content-Disposition' => "inline; filename=\"{$filename}\"",
+            'X-Content-Type-Options' => 'nosniff',
+        ];
+
+        foreach (['Content-Length', 'Content-Range', 'Accept-Ranges', 'Last-Modified', 'ETag'] as $h) {
+            if ($response->hasHeader($h)) {
+                $outHeaders[$h] = $response->getHeaderLine($h);
+            }
+        }
+
+        return $outHeaders;
+    }
+
+    /**
+     * Handle PDF request errors
+     */
+    public function handlePdfError(Response $response, string $url, string $nim): array
+    {
+        $status = $response->getStatusCode();
+        $bodyPreview = '[no body]';
+        
+        try {
+            $bodyPreview = $response->getBody()->read(4096);
+        } catch (\Throwable $e) {
+            $bodyPreview = '[failed to read remote error body]';
+        }
+
+        Log::warning('Remote PDF returned error', [
+            'url' => $url,
+            'status' => $status,
+            'body_preview' => $bodyPreview,
+            'nim' => $nim,
+        ]);
+
+        return [
+            'status' => $status,
+            'body' => $bodyPreview ?: "Remote returned status $status",
+            'content_type' => $response->getHeaderLine('Content-Type') ?: 'text/plain'
+        ];
+    }
+
+    /**
+     * Sanitize and decode URL with security checks
+     */
+    private function sanitizeAndDecodeUrl(string $url): ?string
+    {
+        $parsedUrl = parse_url($url);
+        
+        if (!$parsedUrl) {
+            return null;
+        }
+
+        if (isset($parsedUrl['scheme'])) {
+            if (isset($parsedUrl['path'])) {
+                $decodedPath = urldecode($parsedUrl['path']);
+                $parsedUrl['path'] = $decodedPath;
+                return $this->unparseUrl($parsedUrl);
+            }
+            return $url;
+        }
+
+        $decodedPath = urldecode($url);
+        $decodedPath = str_replace("\0", '', $decodedPath);
+        $decodedPath = str_replace('\\', '/', $decodedPath);
+        
+        if (
+            str_contains($decodedPath, '../') || 
+            str_contains($decodedPath, '..\\') ||
+            str_contains($decodedPath, '...') ||
+            preg_match('#\.\.[\\/]#', $decodedPath)
+        ) {
+            Log::warning('Directory traversal attempt detected', [
+                'path' => $decodedPath,
+                'original' => $url
+            ]);
+            return null;
+        }
+
+        return $decodedPath;
+    }
+
+    /**
+     * Reconstruct URL from parsed components
+     */
+    private function unparseUrl(array $parsed): string
+    {
+        $scheme   = isset($parsed['scheme']) ? $parsed['scheme'] . '://' : '';
+        $host     = $parsed['host'] ?? '';
+        $port     = isset($parsed['port']) ? ':' . $parsed['port'] : '';
+        $user     = $parsed['user'] ?? '';
+        $pass     = isset($parsed['pass']) ? ':' . $parsed['pass']  : '';
+        $pass     = ($user || $pass) ? "$pass@" : '';
+        $path     = $parsed['path'] ?? '';
+        $query    = isset($parsed['query']) ? '?' . $parsed['query'] : '';
+        $fragment = isset($parsed['fragment']) ? '#' . $parsed['fragment'] : '';
+        
+        return "$scheme$user$pass$host$port$path$query$fragment";
     }
 
     

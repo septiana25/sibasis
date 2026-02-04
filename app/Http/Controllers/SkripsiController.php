@@ -92,195 +92,56 @@ class SkripsiController extends Controller
     }
 
     /**
-     * Menjelaskan fungsi streamPdf:
-     *
-     * Fungsi ini bertugas untuk mengambil file PDF skripsi dari sumber eksternal (remote) dan mengirimkannya ke browser pengguna secara streaming.
-     * Fungsi ini juga mendukung permintaan partial content (HTTP Range), sehingga PDF bisa dipreview atau dilanjutkan (resume) di browser.
-     *
-     * Penjelasan langkah demi langkah:
-     * 1. Mengambil data hasil pencarian skripsi dari session berdasarkan $nim.
-     * 2. Mengecek apakah ada file PDF yang valid. Jika tidak ada, kembalikan response 404.
-     * 3. Menyiapkan opsi permintaan HTTP, termasuk header User-Agent dan Range (jika ada).
-     * 4. Menggunakan Guzzle HTTP client untuk mengambil file PDF dari URL sumber secara streaming.
-     * 5. Jika terjadi error saat mengambil file (misal: server remote error), log error dan kembalikan response error ke pengguna.
-     * 6. Jika server remote mengembalikan status error (>=400), ambil cuplikan body error dan forward ke pengguna.
-     * 7. Jika berhasil, ambil header penting dari response remote (Content-Type, Content-Length, dsb).
-     * 8. Stream isi file PDF ke browser pengguna secara bertahap (chunked), agar efisien untuk file besar.
-     * 9. Response akan memiliki header yang sesuai agar browser bisa menampilkan PDF inline.
-     *
-     * Dengan cara ini, file PDF yang tidak berada di server aplikasi tetap bisa diakses pengguna dengan lancar dan aman.
+     * Stream PDF file from remote source with range support
      */
     public function streamPdf(Request $request, $nim)
     {
-        // 1. Ambil data session hasil pencarian skripsi
-        $dataSession = session('skripsi_results') ?? [];
-        [$detail, $fileInfo] = $this->skripsiService->getDocumentFromSession($nim, $dataSession);
-
-        // 2. Cek ketersediaan file PDF
-        if (!$fileInfo || empty($fileInfo['url_file'])) {
-            return response('File PDF tidak tersedia.', 404);
-        }
-
-        $url = $fileInfo['url_file'];
-        //result url https://opac.uinssc.ac.id/skbpp/public/storage/dokumen/2025/FS/Hukum%20Ekonomi%20Syariah%2FMuamalah/2108202090/2108202090_9_fulltext.pdf
-        // 3. Decode URL dan sanitasi path
-        $decodedUrl = $this->sanitizeAndDecodeUrl($url);
-        
-        if (!$decodedUrl) {
-            Log::error('Invalid or unsafe PDF URL', [
-                'original_url' => $url,
-                'nim' => $nim,
-            ]);
-            return response('URL file tidak valid atau tidak aman.', 400);
-        }
-        
-        $rangeHeader = $request->header('Range');
-
-        // 3. Siapkan opsi permintaan HTTP ke server remote
-        $options = [
-            'headers' => [
-                'User-Agent' => $request->header('User-Agent') ?? 'Laravel-Proxy/1.0',
-            ],
-            'stream' => true,
-            'http_errors' => false, // Jangan throw exception untuk error 4xx/5xx
-            'allow_redirects' => true,
-        ];
-
-        if ($rangeHeader) {
-            $options['headers']['Range'] = $rangeHeader;
-        }
-
-        // 4. Ambil file PDF dari server remote
         try {
-            $resp = $this->httpClient->request('GET', $decodedUrl, $options);
+            // Prepare PDF streaming data
+            $pdfData = $this->skripsiService->preparePdfStream($nim);
+            $url = $pdfData['url'];
+
+            // Prepare HTTP options
+            $options = $this->skripsiService->preparePdfHttpOptions($request);
+            
+            // Make HTTP request
+            $response = $this->httpClient->request('GET', $url, $options);
+            $status = $response->getStatusCode();
+            
+            // Handle errors
+            if ($status >= 400) {
+                $errorData = $this->skripsiService->handlePdfError($response, $url, $nim);
+                return response($errorData['body'], $errorData['status'])
+                    ->header('Content-Type', $errorData['content_type']);
+            }
+            
+            // Prepare response headers
+            $headers = $this->skripsiService->preparePdfHeaders($response, $url);
+            
+            // Create streaming response
+            $body = $response->getBody();
+            $streamed = new StreamedResponse(function () use ($body) {
+                while (!$body->eof()) {
+                    echo $body->read(1024 * 8);
+                    if (function_exists('ob_flush')) { @ob_flush(); }
+                    flush();
+                }
+            }, $status, $headers);
+            
+            return $streamed;
+            
         } catch (\Throwable $e) {
-            // 5. Jika gagal, log dan kembalikan error 502
-            Log::error('Guzzle error fetching PDF', [
-                'url' => $decodedUrl,
+            if ($e->getCode() === 404 || $e->getCode() === 400) {
+                return response($e->getMessage(), $e->getCode());
+            }
+            
+            Log::error('PDF streaming error', [
                 'nim' => $nim,
                 'exception' => $e->getMessage(),
             ]);
+            
             return response('Gagal menghubungi sumber file (gateway error).', 502);
         }
-
-        $status = $resp->getStatusCode();
-
-        // 6. Jika server remote error, forward status & cuplikan body
-        if ($status >= 400) {
-            $bodyPreview = '[no body]';
-            try {
-                $bodyPreview = $resp->getBody()->read(4096);
-            } catch (\Throwable $e) {
-                $bodyPreview = '[failed to read remote error body]';
-            }
-
-            Log::warning('Remote PDF returned error', [
-                'url' => $decodedUrl,
-                'status' => $status,
-                'body_preview' => $bodyPreview,
-            ]);
-
-            return response($bodyPreview ?: "Remote returned status $status", $status)
-                ->header('Content-Type', $resp->getHeaderLine('Content-Type') ?: 'text/plain');
-        }
-
-        // 7. Ambil header penting untuk response
-        $contentType = $resp->getHeaderLine('Content-Type') ?: 'application/pdf';
-        $filename = basename(parse_url($decodedUrl, PHP_URL_PATH) ?: 'file.pdf');
-
-        $outHeaders = [
-            'Content-Type' => $contentType,
-            'Content-Disposition' => "inline; filename=\"{$filename}\"",
-            'X-Content-Type-Options' => 'nosniff',
-        ];
-
-        foreach (['Content-Length', 'Content-Range', 'Accept-Ranges', 'Last-Modified', 'ETag'] as $h) {
-            if ($resp->hasHeader($h)) {
-                $outHeaders[$h] = $resp->getHeaderLine($h);
-            }
-        }
-
-        // 8. Stream isi file PDF ke browser
-        $body = $resp->getBody();
-        $streamed = new StreamedResponse(function () use ($body) {
-            while (!$body->eof()) {
-                echo $body->read(1024 * 8);
-                if (function_exists('ob_flush')) { @ob_flush(); }
-                flush();
-            }
-        }, $status, $outHeaders);
-
-        // 9. Kembalikan response streaming ke pengguna
-        return $streamed;
-    }
-
-    /**
-     * Sanitize and decode URL with security checks
-     */
-    protected function sanitizeAndDecodeUrl(string $url): ?string
-    {
-        // Parse URL untuk mendapatkan path
-        $parsedUrl = parse_url($url);
-        
-        if (!$parsedUrl) {
-            return null;
-        }
-
-        // Jika URL lengkap (dengan scheme), kembalikan setelah decode
-        if (isset($parsedUrl['scheme'])) {
-            // Decode hanya path portion untuk remote URLs
-            if (isset($parsedUrl['path'])) {
-                $decodedPath = urldecode($parsedUrl['path']);
-                
-                // Reconstruct URL dengan path yang sudah di-decode
-                $parsedUrl['path'] = $decodedPath;
-                return $this->unparseUrl($parsedUrl);
-            }
-            return $url;
-        }
-
-        // Untuk path lokal, decode dan sanitasi
-        $decodedPath = urldecode($url);
-        
-        // Hapus null bytes (security)
-        $decodedPath = str_replace("\0", '', $decodedPath);
-        
-        // Normalize path separators
-        $decodedPath = str_replace('\\', '/', $decodedPath);
-        
-        // Check untuk directory traversal attempts
-        if (
-            str_contains($decodedPath, '../') || 
-            str_contains($decodedPath, '..\\') ||
-            str_contains($decodedPath, '...') ||
-            preg_match('#\.\.[\\/]#', $decodedPath)
-        ) {
-            Log::warning('Directory traversal attempt detected', [
-                'path' => $decodedPath,
-                'original' => $url
-            ]);
-            return null;
-        }
-
-        return $decodedPath;
-    }
-
-    /**
-     * Reconstruct URL from parsed components
-     */
-    protected function unparseUrl(array $parsed): string
-    {
-        $scheme   = isset($parsed['scheme']) ? $parsed['scheme'] . '://' : '';
-        $host     = $parsed['host'] ?? '';
-        $port     = isset($parsed['port']) ? ':' . $parsed['port'] : '';
-        $user     = $parsed['user'] ?? '';
-        $pass     = isset($parsed['pass']) ? ':' . $parsed['pass']  : '';
-        $pass     = ($user || $pass) ? "$pass@" : '';
-        $path     = $parsed['path'] ?? '';
-        $query    = isset($parsed['query']) ? '?' . $parsed['query'] : '';
-        $fragment = isset($parsed['fragment']) ? '#' . $parsed['fragment'] : '';
-        
-        return "$scheme$user$pass$host$port$path$query$fragment";
     }
 
     public function toggleBookmark(Request $request, $nim)
