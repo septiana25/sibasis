@@ -67,6 +67,7 @@ class SkripsiController extends Controller
             
             [$defaultYear, $fakultasList] = $this->skripsiService->getDropdown();
             
+            // Setup parameter untuk kebutuhan ui query pencarian
             $fieldsToPush = [
                 'judul'    => 'judul_ta',
                 'fakultas' => 'fakultas',
@@ -78,6 +79,17 @@ class SkripsiController extends Controller
                 if (isset($queryParams[$paramKey])) {
                     $resultsService[$resultKey] = $queryParams[$paramKey];
                 }
+            }
+            
+            // Konversikan indeks array ke NIM sebagai kunci agar lebih mudah diakses.
+            if (isset($resultsService['data']) && is_array($resultsService['data'])) {
+                $dataByNim = [];
+                foreach ($resultsService['data'] as $student) {
+                    if (isset($student['nim'])) {
+                        $dataByNim[$student['nim']] = $student;
+                    }
+                }
+                $resultsService['data'] = $dataByNim;
             }
             
             session(['skripsi_results' => $resultsService]);
@@ -95,10 +107,10 @@ class SkripsiController extends Controller
         ]);
     }
 
-    public function show($index)
+    public function show($nim)
     {
         $dataSession = session('skripsi_results') ?? [];
-        [$detail, $fileInfo] = $this->skripsiService->getDocumentFromSession($index, $dataSession);
+        [$detail, $fileInfo] = $this->skripsiService->getDocumentFromSession($nim, $dataSession);
         $member = Auth::guard('member')->user();
 
         $detail['member_id'] = $member->member_id;
@@ -116,7 +128,7 @@ class SkripsiController extends Controller
             $this->skripsiService->logSearchStat($detail);
         }
 
-        return view('skripsi.detail', ['data' => $detail, 'pdf' => $fileInfo, 'index' => $index]);
+        return view('skripsi.detail', ['data' => $detail, 'pdf' => $fileInfo, 'nim' => $nim]);
     }
 
     /**
@@ -126,7 +138,7 @@ class SkripsiController extends Controller
      * Fungsi ini juga mendukung permintaan partial content (HTTP Range), sehingga PDF bisa dipreview atau dilanjutkan (resume) di browser.
      *
      * Penjelasan langkah demi langkah:
-     * 1. Mengambil data hasil pencarian skripsi dari session berdasarkan $index.
+     * 1. Mengambil data hasil pencarian skripsi dari session berdasarkan $nim.
      * 2. Mengecek apakah ada file PDF yang valid. Jika tidak ada, kembalikan response 404.
      * 3. Menyiapkan opsi permintaan HTTP, termasuk header User-Agent dan Range (jika ada).
      * 4. Menggunakan Guzzle HTTP client untuk mengambil file PDF dari URL sumber secara streaming.
@@ -138,11 +150,11 @@ class SkripsiController extends Controller
      *
      * Dengan cara ini, file PDF yang tidak berada di server aplikasi tetap bisa diakses pengguna dengan lancar dan aman.
      */
-    public function streamPdf(Request $request, $index)
+    public function streamPdf(Request $request, $nim)
     {
         // 1. Ambil data session hasil pencarian skripsi
         $dataSession = session('skripsi_results') ?? [];
-        [$detail, $fileInfo] = $this->skripsiService->getDocumentFromSession($index, $dataSession);
+        [$detail, $fileInfo] = $this->skripsiService->getDocumentFromSession($nim, $dataSession);
 
         // 2. Cek ketersediaan file PDF
         if (!$fileInfo || empty($fileInfo['url_file'])) {
@@ -157,7 +169,7 @@ class SkripsiController extends Controller
         if (!$decodedUrl) {
             Log::error('Invalid or unsafe PDF URL', [
                 'original_url' => $url,
-                'index' => $index,
+                'nim' => $nim,
             ]);
             return response('URL file tidak valid atau tidak aman.', 400);
         }
@@ -185,7 +197,7 @@ class SkripsiController extends Controller
             // 5. Jika gagal, log dan kembalikan error 502
             Log::error('Guzzle error fetching PDF', [
                 'url' => $decodedUrl,
-                'index' => $index,
+                'nim' => $nim,
                 'exception' => $e->getMessage(),
             ]);
             return response('Gagal menghubungi sumber file (gateway error).', 502);
@@ -311,7 +323,7 @@ class SkripsiController extends Controller
         return "$scheme$user$pass$host$port$path$query$fragment";
     }
 
-    public function toggleBookmark(Request $request, $index)
+    public function toggleBookmark(Request $request, $nim)
     {
         $dataSession = session('skripsi_results');
         if(empty($dataSession)){
@@ -320,7 +332,7 @@ class SkripsiController extends Controller
 
         $user = Auth::guard('member')->user();
 
-        $message = $this->skripsiService->toggleBookmark($index, $dataSession, $user);
+        $message = $this->skripsiService->toggleBookmark($nim, $dataSession, $user);
 
         return redirect()->back()->with('success', $message);
     }

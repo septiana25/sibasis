@@ -39,19 +39,19 @@ class SkripsiService{
         return $this->skripsiApiService->getSkripsiFromApi($queryParams);
     }
 
-    public function getDocumentFromSession($index, array $dataSession): array
+    public function getDocumentFromSession($nim, array $dataSession): array
     {
 
         if (!$dataSession || !isset($dataSession['data']) || !is_array($dataSession['data'])) {
             abort(404, 'Sesi data skripsi tidak ditemukan atau telah kedaluwarsa.');
         }
 
-        // 3) Validasi index
-        if (!array_key_exists($index, $dataSession['data'])) {
-            abort(404, 'Index data tidak valid.');
+        // Validasi nim - check if nim exists as key in the data array
+        if (!array_key_exists($nim, $dataSession['data'])) {
+            abort(404, 'Data dengan NIM tersebut tidak ditemukan.');
         }
 
-        $detail = $dataSession['data'][$index];
+        $detail = $dataSession['data'][$nim];
 
         $dokumen = $detail['dokumen'] ?? [];
         if (!is_array($dokumen)) {
@@ -129,26 +129,26 @@ class SkripsiService{
             ->get();
     }
 
-    public function toggleBookmark(int $index, array $dataSession, object $user): string
+    public function toggleBookmark(string $nim, array $dataSession, object $user): string
     {
         // Pastikan struktur minimal ada
         if (!$dataSession || !isset($dataSession['data']) || !is_array($dataSession['data'])) {
             return 'data tidak ada';
         }
 
-        // Pastikan index ada
-        if (!array_key_exists($index, $dataSession['data'])) {
-            return 'index tidak ada';
+        // Pastikan nim ada
+        if (!array_key_exists($nim, $dataSession['data'])) {
+            return 'data dengan NIM tersebut tidak ditemukan';
         }
 
-        [$detail, $fileInfo] = $this->getDocumentFromSession($index, $dataSession);
+        [$detail, $fileInfo] = $this->getDocumentFromSession($nim, $dataSession);
 
         $bookmark = $this->getBookmark($user->member_id, $detail);
 
         if ($bookmark) {
             // jika sudah ada, hapus (unbookmark)
             $bookmark->delete();
-            $this->setBookmarkFlagInSession($index, false, $dataSession);
+            $this->setBookmarkFlagInSession($nim, false, $dataSession);
             return 'Bookmark dihapus.';
         }
 
@@ -158,28 +158,28 @@ class SkripsiService{
             'member_name' => $user->member_name ?? null,
             'judul_ta' => $detail['judul_ta'],
             'meta' => [
-                'saved_at_session_index' => $index,
+                'saved_at_session_nim' => $nim,
             ],
         ]);
 
-        $this->setBookmarkFlagInSession($index, true, $dataSession);
+        $this->setBookmarkFlagInSession($nim, true, $dataSession);
         return 'Berhasil ditambahkan ke bookmark.';
     }
 
-    private function setBookmarkFlagInSession(int $index, bool $value, array $dataSession): void
+    private function setBookmarkFlagInSession(string $nim, bool $value, array $dataSession): void
     {
         // Pastikan struktur minimal ada
         if (!$dataSession || !isset($dataSession['data']) || !is_array($dataSession['data'])) {
             return;
         }
         
-        // Pastikan index ada
-        if (!array_key_exists($index, $dataSession['data'])) {
+        // Pastikan nim ada
+        if (!array_key_exists($nim, $dataSession['data'])) {
             return;
         }
         
         // Set flag 'bookmarked'
-        $dataSession['data'][$index]['bookmarked'] = $value;
+        $dataSession['data'][$nim]['bookmarked'] = $value;
 
         // Simpan kembali ke session
         session(['skripsi_results' => $dataSession]);

@@ -19,7 +19,7 @@
                         <span class="title-link text-uppercase">{{ $data['judul_ta'] }}</span>
                     </div>
                 </div>
-                <a href="{{ route('skripsi.bookmark', $index) }}" class="link-danger" aria-label="Bookmark">
+                <a href="{{ route('skripsi.bookmark', $nim) }}" class="link-danger" aria-label="Bookmark">
                     <h3 id="bookmark" class="mb-0"><i class="bi bi-bookmark{{ ($data['bookmarked'] ?? false) ? '-fill' : '' }}"></i></h3>
                 </a>
             </div>
@@ -68,22 +68,13 @@
                     </div>
                     {{-- pdf.js --}}
                     <iframe id="viewer-frame"
-                            src="{{ asset('pdfjs/web/viewer.html') }}?file={{ urlencode(route('skripsi.stream', ['index' => $index])) }}"
+                            src="{{ asset('pdfjs/web/viewer.html') }}?file={{ urlencode(route('skripsi.stream', ['nim' => $nim])) }}"
                             width="100%"
                             height="100%"
                             frameborder="0"
                             sandbox="allow-scripts allow-same-origin"
                             onload="document.getElementById('iframe-placeholder').style.display='none';">
-                    </iframe>
-                
-                    <!-- Iframe PDF -->
-                    {{-- <iframe 
-                        src="{{ asset($pdf['url_file']) }}#toolbar=0&navpanes=0&scrollbar=0" 
-                        width="100%" 
-                        height="100%" 
-                        frameborder="0"
-                        onload="document.getElementById('iframe-placeholder').style.display='none';">
-                    </iframe> --}}
+                    </iframe>               
                 </div>
                 <small class="text-muted text-danger-emphasis d-inline-block mt-2">* File ini hanya dapat dibaca, tidak dapat diunduh atau dicetak.</small>
             </div>
