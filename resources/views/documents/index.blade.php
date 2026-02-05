@@ -178,11 +178,11 @@
                                     </td>
                                     <td>
                                         <div class="btn-group btn-group-sm" role="group">
-                                            <a href="{{ route('admin.documents.show', $doc) }}" target="_blank"
-                                                class="btn btn-outline-primary" title="Lihat PDF">
-                                                <i class="bi bi-eye"></i>
-                                            </a>
                                             @if ($doc->status == 'pending')
+                                                <a href="{{ route('admin.documents.show', $doc) }}" target="_blank"
+                                                    class="btn btn-outline-primary" title="Lihat PDF">
+                                                    <i class="bi bi-eye"></i>
+                                                </a>
                                                 <button type="button" class="btn btn-outline-warning"
                                                     onclick="editDocument({{ $doc->id }})" title="Edit">
                                                     <i class="bi bi-pencil"></i>
