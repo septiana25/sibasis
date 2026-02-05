@@ -8,20 +8,19 @@ use App\Services\MahasiswaApiService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
+/**
+ * Status values:
+ * - pending -> masih dalam pengumpulan dokumen
+ * - process -> dalam proses integrasi ke sibaska
+ * - approved -> dokumen diterima
+ * 
+ */
 class DocumentController extends Controller
 {
-
-
     public function __construct(
         protected DocumentService $documentService,
         protected MahasiswaApiService $mahasiswaApiService
     ) {}
-
-    /* public function __construct()
-    {
-        $this->middleware('auth:web');
-        // Optional: gate by role if available in future
-    } */
 
     public function index(Request $request)
     {

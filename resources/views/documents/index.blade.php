@@ -8,7 +8,8 @@
             <h3>Daftar Dokumen</h3>
             <div>
                 <a href="{{ route('admin.documents.export') }}" class="btn btn-outline-secondary">Export Format Ajuan</a>
-                <a href="{{ route('admin.documents.export-format') }}" class="btn btn-outline-secondary">Export Format Dokumen</a>
+                <a href="{{ route('admin.documents.export-format') }}" class="btn btn-outline-secondary">Export Format
+                    Dokumen</a>
                 <a href="{{ route('admin.documents.create') }}" class="btn btn-primary">Upload Dokumen</a>
             </div>
         </div>
@@ -147,7 +148,8 @@
                                         <small class="text-muted">{{ $doc->nim }}</small>
                                     </td>
                                     <td>
-                                        <div class="text-truncate" style="max-width: 200px;" title="{{ $doc->nama }}">
+                                        <div class="text-truncate" style="max-width: 200px;"
+                                            title="{{ $doc->nama }}">
                                             <small class="text-muted">{{ $doc->nama }}</small>
                                         </div>
                                     </td>
@@ -168,8 +170,7 @@
                                             $statusColors = [
                                                 'pending' => 'warning',
                                                 'approved' => 'success',
-                                                'rejected' => 'danger',
-                                                'padding' => 'secondary',
+                                                'process' => 'danger',
                                             ];
                                             $color = $statusColors[$doc->status] ?? 'secondary';
                                         @endphp
@@ -181,10 +182,12 @@
                                                 class="btn btn-outline-primary" title="Lihat PDF">
                                                 <i class="bi bi-eye"></i>
                                             </a>
-                                            <button type="button" class="btn btn-outline-warning"
-                                                onclick="editDocument({{ $doc->id }})" title="Edit">
-                                                <i class="bi bi-pencil"></i>
-                                            </button>
+                                            @if ($doc->status == 'pending')
+                                                <button type="button" class="btn btn-outline-warning"
+                                                    onclick="editDocument({{ $doc->id }})" title="Edit">
+                                                    <i class="bi bi-pencil"></i>
+                                                </button>
+                                            @endif
                                             <!-- Hidden trigger for modal -->
                                             <button type="button" class="d-none" data-edit-id="{{ $doc->id }}"
                                                 data-bs-toggle="modal" data-bs-target="#editDocumentModal"></button>
