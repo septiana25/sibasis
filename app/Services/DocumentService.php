@@ -203,7 +203,7 @@ class DocumentService
      */
     public function exportToCsv(): StreamedResponse
     {
-        $filename = 'documents_export_' . now()->format('Ymd_His') . '.csv';
+        $filename = 'format_ajuan' . now()->format('Ymd_His') . '.csv';
         $headers = [
             'Content-Type' => 'text/csv',
             'Content-Disposition' => 'attachment; filename="' . $filename . '"',
@@ -215,15 +215,18 @@ class DocumentService
             // Write header row
             fputcsv($handle, [
                 'id',
-                'nim',
-                'nama',
-                'fakultas',
-                'prodi',
-                'tahun',
-                'file_path',
                 'status',
-                'uploaded_by',
-                'created_at'
+                'nim',
+                'nia',
+                'nama',
+                'fakultas_id',
+                'prodi_id',
+                'alamat',
+                'nohp',
+                'email',
+                'judul',
+                'no_skbpp',
+                'tgl_skbpp'
             ]);
 
             // Write data rows in chunks for memory efficiency
@@ -231,15 +234,56 @@ class DocumentService
                 foreach ($rows as $row) {
                     fputcsv($handle, [
                         $row->id,
+                        $row->status,
+                        $row->nim,
                         $row->nim,
                         $row->nama,
                         $row->fakultas,
                         $row->prodi,
-                        $row->tahun,
-                        $row->file_path,
+                        $row->alamat,
+                        $row->no_hp,
+                        $row->email,
+                        $row->judul,
+                        null,
+                        null,
+                    ]);
+                }
+            });
+
+            fclose($handle);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
+    public function exportFormatDocument(): StreamedResponse{
+        $filename = 'format_dokumen_' . now()->format('Ymd_His') . '.csv';
+        $headers = [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ];
+
+        $callback = function () {
+            $handle = fopen('php://output', 'w');
+
+            // Write header row
+            fputcsv($handle, [
+                'id',
+                'status',
+                'nim',
+                'dokumen',
+                'dokumen_id'
+            ]);
+
+            // Write data rows in chunks for memory efficiency
+            Document::orderBy('id')->chunk(500, function ($rows) use ($handle) {
+                foreach ($rows as $row) {
+                    fputcsv($handle, [
+                        $row->id,
                         $row->status,
-                        $row->uploaded_by,
-                        optional($row->created_at)->toDateTimeString(),
+                        $row->nim,
+                        $row->nim.'_9_fulltext.pdf',
+                        9
                     ]);
                 }
             });

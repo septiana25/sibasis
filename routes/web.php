@@ -63,6 +63,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/documents/create', [DocumentController::class, 'create'])->name('documents.create');
         Route::post('/documents', [DocumentController::class, 'store'])->name('documents.store');
         Route::get('/documents/export', [DocumentController::class, 'export'])->name('documents.export');
+        Route::get('/documents/export-format', [DocumentController::class, 'exportFormat'])->name('documents.export-format');
         Route::post('/documents/lookup', [DocumentController::class, 'lookupByNim'])->name('documents.lookup');
         Route::get('/documents/{document}/edit', [DocumentController::class, 'edit'])->name('documents.edit');
         Route::put('/documents/{document}', [DocumentController::class, 'update'])->name('documents.update');

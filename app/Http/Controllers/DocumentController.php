@@ -105,6 +105,11 @@ class DocumentController extends Controller
         return $this->documentService->exportToCsv();
     }
 
+    public function exportFormat()
+    {
+        return $this->documentService->exportFormatDocument();
+    }
+
     public function edit(Document $document)
     {
         return response()->json([
