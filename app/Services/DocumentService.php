@@ -217,6 +217,7 @@ class DocumentService
             fputcsv($handle, [
                 'id',
                 'status',
+                'tahun',
                 'nim',
                 'nia',
                 'nama',
@@ -234,6 +235,7 @@ class DocumentService
                     fputcsv($handle, [
                         $row->id,
                         $row->status,
+                        $row->tahun,
                         $row->nim,
                         $row->nim,
                         $row->nama,
