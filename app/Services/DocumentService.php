@@ -8,6 +8,7 @@ use App\Models\Prodi;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class DocumentService
@@ -128,7 +129,7 @@ class DocumentService
         return Document::create([
             'nim' => $nim,
             'nama' => $nama,
-            'judul' => $judul,
+            'judul' => Str::squish($judul),
             'fakultas' => $matchProdi['id_fakultas'],
             'prodi' => $matchProdi['id_prodi'],
             'tahun' => $tahun,
@@ -224,13 +225,11 @@ class DocumentService
                 'alamat',
                 'nohp',
                 'email',
-                'judul',
-                'no_skbpp',
-                'tgl_skbpp'
+                'judul'
             ]);
 
             // Write data rows in chunks for memory efficiency
-            Document::where('status', 'pending')->orderBy('id')->chunk(500, function ($rows) use ($handle) {
+            Document::where('status', 'process')->orderBy('id')->chunk(500, function ($rows) use ($handle) {
                 foreach ($rows as $row) {
                     fputcsv($handle, [
                         $row->id,
@@ -243,9 +242,7 @@ class DocumentService
                         $row->alamat,
                         $row->no_hp,
                         $row->email,
-                        $row->judul,
-                        null,
-                        null,
+                        Str::squish($row->judul)
                     ]);
                 }
             });
@@ -303,7 +300,7 @@ class DocumentService
         $tahun = (int) $validatedData['tahun'];
 
         $updateData = [
-            'judul' => $judul,
+            'judul' => Str::squish($judul),
             'tahun' => $tahun,
         ];
 
