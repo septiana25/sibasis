@@ -229,7 +229,7 @@ class DocumentService
             ]);
 
             // Write data rows in chunks for memory efficiency
-            Document::where('status', 'process')->orderBy('id')->chunk(500, function ($rows) use ($handle) {
+            Document::where('status', 'process')->with(['fakultasRelation', 'prodiRelation'])->orderBy('id')->chunk(500, function ($rows) use ($handle) {
                 foreach ($rows as $row) {
                     fputcsv($handle, [
                         $row->id,
@@ -238,7 +238,7 @@ class DocumentService
                         $row->nim,
                         $row->nama,
                         $row->fakultas,
-                        $row->prodi,
+                        $row->prodiRelation->kode,
                         $row->alamat,
                         $row->no_hp,
                         $row->email,
