@@ -5,7 +5,6 @@ namespace App\Services;
 use App\Models\Document;
 use App\Models\Fakultas;
 use App\Models\Prodi;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -74,14 +73,17 @@ class DocumentService
 
     /**
      * Get available statuses
+     * - pending -> masih dalam pengumpulan dokumen
+     * - process -> dalam proses integrasi ke sibaska
+     * - approved -> dokumen diterima
      */
     public function getAvailableStatuses(): array
     {
         return [
             'pending' => 'Pending',
+            'process' => 'Process',
             'approved' => 'Approved',
-            'rejected' => 'Rejected',
-            'padding' => 'Padding'
+            'rejected' => 'Rejected'
         ];
     }
 
@@ -230,7 +232,7 @@ class DocumentService
             ]);
 
             // Write data rows in chunks for memory efficiency
-            Document::where('status', 'process')->with(['fakultasRelation', 'prodiRelation'])->orderBy('id')->chunk(500, function ($rows) use ($handle) {
+            Document::where('status', 'pending')->with(['fakultasRelation', 'prodiRelation'])->orderBy('id')->chunk(500, function ($rows) use ($handle) {
                 foreach ($rows as $row) {
                     fputcsv($handle, [
                         $row->id,
@@ -255,7 +257,8 @@ class DocumentService
         return response()->stream($callback, 200, $headers);
     }
 
-    public function exportFormatDocument(): StreamedResponse{
+    public function exportFormatDocument(): StreamedResponse
+    {
         $filename = 'format_dokumen_' . now()->format('Ymd_His') . '.csv';
         $headers = [
             'Content-Type' => 'text/csv',
@@ -281,7 +284,7 @@ class DocumentService
                         $row->id,
                         $row->status,
                         $row->nim,
-                        $row->nim.'_9_fulltext.pdf',
+                        $row->nim . '_9_fulltext.pdf',
                         9
                     ]);
                 }
