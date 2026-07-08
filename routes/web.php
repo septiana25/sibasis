@@ -8,6 +8,7 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\MemberAuthController;
 use App\Http\Controllers\MemberDashboardController;
+use App\Http\Controllers\Reports\VisitorReportController;
 use App\Http\Controllers\ViolationController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -68,6 +69,9 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/documents/{document}/edit', [DocumentController::class, 'edit'])->name('documents.edit');
         Route::put('/documents/{document}', [DocumentController::class, 'update'])->name('documents.update');
         Route::get('/documents/{document}', [DocumentController::class, 'show'])->name('documents.show');
+    
+        // Laporan module
+        Route::get('/reports/visitor', [VisitorReportController::class, 'index'])->name('reports.visitor');
     });
 });
 

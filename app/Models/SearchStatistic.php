@@ -16,4 +16,9 @@ class SearchStatistic extends Model
         'program_studi', 
         'fakultas'
     ];
+
+    public function memberType()
+    {
+        return $this->belongsTo(MemberType::class, 'member_type_id');
+    }
 }

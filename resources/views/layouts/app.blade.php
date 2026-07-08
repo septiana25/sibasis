@@ -74,7 +74,7 @@
                                         {{ route('skripsi.index') }}
                                             ">
                                         <i class="bi bi-house me-1"></i>Beranda
-                                @endauth
+                                    @endauth
                                 </a>
                         </li>
                     </ul>
@@ -104,6 +104,15 @@
                                     <a class="nav-link fw-semibold" href="{{ route('admin.documents.index') }}">
                                         <i class="bi bi-upload me-1"></i>Data Dokumen
                                     </a>
+                                </li>
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link fw-semibold dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
+                                        aria-expanded="false">
+                                        <i class="bi bi-file-earmark-bar-graph me-1"></i> Laporan
+                                    </a>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" href="{{ route('admin.reports.visitor') }}"> Pengunjung</a></li>
+                                    </ul>
                                 </li>
                             @endauth
 
@@ -184,7 +193,8 @@
                                 </strong> {{ session('error') }}
                             </div>
                         </div>
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"
+                            aria-label="Close"></button>
                     </div>
                 </div>
             @endif
