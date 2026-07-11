@@ -8,6 +8,7 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\MemberAuthController;
 use App\Http\Controllers\MemberDashboardController;
+use App\Http\Controllers\Reports\KeywordTrendController;
 use App\Http\Controllers\Reports\VisitorReportController;
 use App\Http\Controllers\ViolationController;
 use Illuminate\Support\Facades\Auth;
@@ -73,6 +74,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
         // Laporan module
         Route::get('/reports/visitor', [VisitorReportController::class, 'index'])->name('reports.visitor');
         Route::get('/reports/visitor/export', [VisitorReportController::class, 'export'])->name('reports.visitor.export');
+        Route::get('/reports/keyword', [KeywordTrendController::class, 'index'])->name('reports.keyword');
+        Route::get('/reports/keyword/export', [KeywordTrendController::class, 'export'])->name('reports.keyword.export');
     });
 });
 

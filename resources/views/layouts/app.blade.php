@@ -111,7 +111,8 @@
                                         <i class="bi bi-file-earmark-bar-graph me-1"></i> Laporan
                                     </a>
                                     <ul class="dropdown-menu">
-                                        <li><a class="dropdown-item" href="{{ route('admin.reports.visitor') }}"> Pengunjung</a></li>
+                                        <li><a class="dropdown-item" href="{{ route('admin.reports.visitor') }}"><i class="bi bi-people me-1"></i> Pengunjung</a></li>
+                                        <li><a class="dropdown-item" href="{{ route('admin.reports.keyword') }}"><i class="bi bi-graph-up-arrow me-1"></i> Tren Pencarian</a></li>
                                     </ul>
                                 </li>
                             @endauth
