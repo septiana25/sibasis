@@ -54,6 +54,13 @@
                         <a href="{{ route('admin.reports.visitor') }}" class="btn btn-outline-secondary">
                             <i class="bi bi-arrow-clockwise"></i> Reset
                         </a>
+                        <a href="{{ route('admin.reports.visitor.export', array_filter([
+                                'search'    => request('search'),
+                                'date_from' => request('date_from'),
+                                'date_to'   => request('date_to'),
+                            ])) }}" class="btn btn-success ms-auto">
+                            <i class="bi bi-file-earmark-spreadsheet"></i> Export Excel
+                        </a>
                     </div>
                 </form>
             </div>

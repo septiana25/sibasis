@@ -72,6 +72,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
     
         // Laporan module
         Route::get('/reports/visitor', [VisitorReportController::class, 'index'])->name('reports.visitor');
+        Route::get('/reports/visitor/export', [VisitorReportController::class, 'export'])->name('reports.visitor.export');
     });
 });
 

@@ -37,6 +37,13 @@ class VisitorReportController extends Controller
         ]);
     } */
 
+    public function export(Request $request)
+    {
+        $filters = $this->buildFilters($request);
+
+        return $this->visitorReportService->exportToExcel($filters);
+    }
+
     /**
      * Build filters array from request parameters
      */
