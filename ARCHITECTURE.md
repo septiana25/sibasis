@@ -46,7 +46,13 @@ app/
 │   │   ├── DocumentController.php          # Admin upload dokumen
 │   │   ├── MemberDashboardController.php   # Dashboard mahasiswa
 │   │   ├── MemberAuthController.php        # Login/logout mahasiswa
-│   │   └── Admin/                          # Controllers khusus admin
+|   |   ├── UserAuthController.php          # Login/logout admin
+|   |   ├── ViolationsController.php        # Handle validation errors
+│   │   ├── Admin/                          # Controllers khusus admin
+|   |   |   └── DashboardController.php     # Admin dashboard
+|   |   └── Reports/                        # Admin reporting controllers
+|   |       └── KeyMetricsController.php    # Reporting key metrics
+|   |       └── VisualizationController.php # Reporting visualizations
 │   └── Middleware/
 │       └── LogoutOtherGuards.php           # Multi-guard logout logic
 ├── Models/
