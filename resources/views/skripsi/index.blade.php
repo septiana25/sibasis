@@ -38,8 +38,16 @@
                                             aria-hidden="true" id="searchSpinner"></span>
                                         Cari
                                     </button>
+                                    <button type="button" id="tanyaAiButton" class="search-button ai-button">
+                                        <i class="bi bi-stars me-2" id="aiIcon"></i>
+                                        <span class="spinner-border spinner-border-sm me-2 d-none" role="status"
+                                            aria-hidden="true" id="aiSpinner"></span>
+                                        Tanya AI
+                                    </button>
                                 </div>
+                                <div class="invalid-feedback d-none" id="aiFeedback">tanyakan tentang tugas akhir anda</div>
                             </div>
+
 
                             <!-- Refined Filter Section -->
                             <div class="filter-section">
@@ -376,6 +384,44 @@
                     stopLoading();
                 }
             });
+        });
+
+        // Tombol "Tanya AI" - redirect ke Chat AI via SSO
+        document.addEventListener('DOMContentLoaded', function() {
+            const aiButton = document.getElementById('tanyaAiButton');
+            const aiIcon = document.getElementById('aiIcon');
+            const aiSpinner = document.getElementById('aiSpinner');
+            const aiFeedback = document.getElementById('aiFeedback');
+            const searchInput = document.getElementById('judul');
+            const searchInputGroup = searchInput?.closest('.search-input-group');
+
+            if (aiButton) {
+                aiButton.addEventListener('click', function() {
+                    const query = searchInput.value.trim();
+
+                    if (!query) {
+                        searchInputGroup?.classList.add('is-invalid');
+                        aiFeedback?.classList.remove('d-none');
+                        searchInput.focus();
+                        return;
+                    }
+
+                    searchInputGroup?.classList.remove('is-invalid');
+                    aiFeedback?.classList.add('d-none');
+
+                    aiButton.setAttribute('disabled', 'disabled');
+                    aiButton.classList.add('disabled');
+                    aiIcon?.classList.add('d-none');
+                    aiSpinner?.classList.remove('d-none');
+
+                    window.location.href = '/redirect-chat-ai?q=' + encodeURIComponent(query);
+                });
+
+                searchInput?.addEventListener('input', function() {
+                    searchInputGroup?.classList.remove('is-invalid');
+                    aiFeedback?.classList.add('d-none');
+                });
+            }
         });
 
         // Enhanced Search Experience

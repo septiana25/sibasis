@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\SkripsiController;
+use App\Http\Controllers\AiChatSsoController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Auth\ConfirmPasswordController;
@@ -35,6 +36,8 @@ Route::middleware('auth:member')->group(function () {
     Route::post('/skripsi/search', [SkripsiController::class, 'search'])->name('skripsi.search');
     Route::get('/skripsi/bookmark/{nim}', [SkripsiController::class, 'toggleBookmark'])->name('skripsi.bookmark');
     Route::get('/skripsi/stream/{nim}', [SkripsiController::class, 'streamPdf'])->name('skripsi.stream');
+
+    Route::get('/redirect-chat-ai', [AiChatSsoController::class, 'redirect'])->name('chat-ai.redirect');
 
     Route::get('/member/dashboard', [MemberDashboardController::class, 'index'])->name('member.dashboard');
 
