@@ -50,13 +50,18 @@
                     </div>
                 </div>
 
-                <div class="card-header">
-                    <div class="card-icon">
-                        <i class="bi bi-file-earmark-pdf"></i>
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <div class="card-icon">
+                            <i class="bi bi-file-earmark-pdf"></i>
+                        </div>
+                        <div class="card-title ms-2 mb-0">
+                            <span class="title-link">Pratinjau Skripsi (PDF)</span>
+                        </div>
                     </div>
-                    <div class="card-title">
-                        <span class="title-link">Pratinjau Skripsi (PDF)</span>
-                    </div>
+                    <button type="button" id="tanyaAiButton" class="btn btn-sm btn-tanya-ai text-white" onclick="handleTanyaAi()">
+                        <i class="bi bi-stars me-1" id="tanyaAiIcon"></i>Tanya AI
+                    </button>
                 </div>
 
                 <div class="card-body">
@@ -86,6 +91,25 @@
     </div>
 
     <script>
+        function handleTanyaAi() {
+            const button = document.getElementById('tanyaAiButton');
+            const icon = document.getElementById('tanyaAiIcon');
+
+            button.setAttribute('disabled', 'disabled');
+            icon.outerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>';
+
+            const judul = "{!! addslashes($data['judul_ta']) !!}";
+            const query = judul + ' jelaskan hasil penelitiannya';
+            // Membuka URL di tab baru
+            window.open('/redirect-chat-ai?q=' + encodeURIComponent(query), '_blank');
+
+            // Mengembalikan status tombol karena pengguna tidak berpindah halaman
+            setTimeout(() => {
+                button.removeAttribute('disabled');
+                button.innerHTML = '<i class="bi bi-stars me-1" id="tanyaAiIcon"></i>Tanya AI';
+            }, 20000);
+        }
+
         // Block print shortcut globally (best-effort). PDF.js may still respond, but ini menambah lapisan.
         window.addEventListener('keydown', function(e) {
             if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'p') {
