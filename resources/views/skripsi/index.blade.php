@@ -332,7 +332,7 @@
             }
         });
 
-        // Animated Search Button
+        // Animated Search Button & Tombol "Tanya AI" (satu scope agar saling menonaktifkan)
         document.addEventListener('DOMContentLoaded', function() {
             const form = document.querySelector('.search-form');
             const button = form?.querySelector('.search-button');
@@ -342,14 +342,25 @@
             const wordCari = document.getElementById('wordCari');
             const heroTitleSpan = document.getElementById('heroTitleSpan');
 
+            const aiButton = document.getElementById('tanyaAiButton');
+            const aiIcon = document.getElementById('aiIcon');
+            const aiSpinner = document.getElementById('aiSpinner');
+            const aiFeedback = document.getElementById('aiFeedback');
+            const searchInput = document.getElementById('judul');
+            const searchInputGroup = searchInput?.closest('.search-input-group');
+
             function startLoading() {
-                if (!button) return;
-                if (!button.hasAttribute('disabled')) {
+                if (button && !button.hasAttribute('disabled')) {
                     button.setAttribute('disabled', 'disabled');
                     button.classList.add('disabled');
                 }
                 if (icon) icon.classList.add('d-none');
                 if (spinner) spinner.classList.remove('d-none');
+
+                if (aiButton && !aiButton.hasAttribute('disabled')) {
+                    aiButton.setAttribute('disabled', 'disabled');
+                    aiButton.classList.add('disabled');
+                }
 
                 // Swap hero title parts
                 if (wordCari) wordCari.classList.add('d-none');
@@ -371,29 +382,28 @@
                 }
             }
 
+            // Kembalikan kedua tombol ke kondisi semula (dipanggil saat restore dari bfcache)
+            function stopLoading() {
+                if (button) {
+                    button.removeAttribute('disabled');
+                    button.classList.remove('disabled');
+                    if (icon) icon.classList.remove('d-none');
+                    if (spinner) spinner.classList.add('d-none');
+                }
+                if (aiButton) {
+                    aiButton.removeAttribute('disabled');
+                    aiButton.classList.remove('disabled');
+                    if (aiIcon) aiIcon.classList.remove('d-none');
+                    if (aiSpinner) aiSpinner.classList.add('d-none');
+                }
+            }
+
             if (form) {
                 form.addEventListener('submit', function() {
                     startLoading();
                     // Let the normal form submission proceed
                 });
             }
-
-            // Restore state when navigating back (bfcache)
-            window.addEventListener('pageshow', function(e) {
-                if (e.persisted) {
-                    stopLoading();
-                }
-            });
-        });
-
-        // Tombol "Tanya AI" - redirect ke Chat AI via SSO
-        document.addEventListener('DOMContentLoaded', function() {
-            const aiButton = document.getElementById('tanyaAiButton');
-            const aiIcon = document.getElementById('aiIcon');
-            const aiSpinner = document.getElementById('aiSpinner');
-            const aiFeedback = document.getElementById('aiFeedback');
-            const searchInput = document.getElementById('judul');
-            const searchInputGroup = searchInput?.closest('.search-input-group');
 
             if (aiButton) {
                 aiButton.addEventListener('click', function() {
@@ -414,7 +424,25 @@
                     aiIcon?.classList.add('d-none');
                     aiSpinner?.classList.remove('d-none');
 
-                    window.location.href = '/redirect-chat-ai?q=' + encodeURIComponent(query);
+                    // Cegah konflik: nonaktifkan juga tombol pencarian utama
+                    if (button) {
+                        button.setAttribute('disabled', 'disabled');
+                        button.classList.add('disabled');
+                    }
+
+                    window.open('/redirect-chat-ai?q=' + encodeURIComponent(query), '_blank');
+
+                    // Halaman tidak reload karena dibuka di tab baru, pulihkan UI secara manual
+                    setTimeout(function() {
+                        aiButton.removeAttribute('disabled');
+                        aiButton.classList.remove('disabled');
+                        if (button) {
+                            button.removeAttribute('disabled');
+                            button.classList.remove('disabled');
+                        }
+                        aiSpinner?.classList.add('d-none');
+                        aiIcon?.classList.remove('d-none');
+                    }, 1000);
                 });
 
                 searchInput?.addEventListener('input', function() {
@@ -422,6 +450,13 @@
                     aiFeedback?.classList.add('d-none');
                 });
             }
+
+            // Restore state when navigating back (bfcache)
+            window.addEventListener('pageshow', function(e) {
+                if (e.persisted) {
+                    stopLoading();
+                }
+            });
         });
 
         // Enhanced Search Experience
